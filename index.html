@@ -45,8 +45,6 @@
             
             canvas {
                 border: 1px solid #333;
-                width: 100vw !important;
-                height: auto !important;
             }
             
             .loading {
@@ -56,31 +54,6 @@
                 transform: translate(-50%, -50%);
             }
         }
-
-        @media (max-width: 768px) {
-    body {
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-    }
-    
-    canvas {
-        border: none !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-    }
-    
-    .loading {
-        font-size: 18px;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 1000;
-    }
-}
         
         @media (max-height: 600px) {
             canvas {
@@ -560,24 +533,24 @@
                 }
                 
                 ctx.font = `${optionSize}px Arial`;
-const options = this.pillarOptions[this.currentPillar];
+                const options = this.pillarOptions[this.currentPillar];
 
-for (let i = 0; i < options.length; i++) {
-    const rect = this.optionRects[i];
-    
-    // Draw button background
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-    
-    // Draw button border
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
-    
-    // Draw text centered in button
-    ctx.fillStyle = 'black';
-    ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2 + 5);
-}
+                for (let i = 0; i < options.length; i++) {
+                    const rect = this.optionRects[i];
+                    
+                    // Draw button background
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+                    
+                    // Draw button border
+                    ctx.strokeStyle = 'black';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+                    
+                    // Draw text centered in button
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2 + 5);
+                }
                 
                 // Draw PNG images instead of pixel art
                 for (let anim of this.animatedItems) {
@@ -748,35 +721,27 @@ for (let i = 0; i < options.length; i++) {
             }
             
             resizeCanvas() {
-    const aspectRatio = 1920 / 1080;
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile) {
-        // For mobile, use full viewport
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        
-        this.canvas.style.width = viewportWidth + 'px';
-        this.canvas.style.height = viewportHeight + 'px';
-        
-        // Set canvas position
-        this.canvas.style.position = 'fixed';
-        this.canvas.style.top = '0';
-        this.canvas.style.left = '0';
-    } else {
-        this.canvas.style.position = 'static';
-        if (window.innerWidth / window.innerHeight > aspectRatio) {
-            this.canvas.style.height = Math.min(window.innerHeight * 0.95, 1080) + 'px';
-            this.canvas.style.width = (parseFloat(this.canvas.style.height) * aspectRatio) + 'px';
-        } else {
-            this.canvas.style.width = Math.min(window.innerWidth * 0.95, 1920) + 'px';
-            this.canvas.style.height = (parseFloat(this.canvas.style.width) / aspectRatio) + 'px';
-        }
-    }
-    
-    this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
-    this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
-}
+                const aspectRatio = 1920 / 1080; // 16:9 aspect ratio
+                const isMobile = window.innerWidth <= 768;
+                
+                // Always maintain aspect ratio, even on mobile
+                if (window.innerWidth / window.innerHeight > aspectRatio) {
+                    // Window is wider than 16:9, fit to height
+                    this.canvas.style.height = Math.min(window.innerHeight * 0.95, 1080) + 'px';
+                    this.canvas.style.width = (parseFloat(this.canvas.style.height) * aspectRatio) + 'px';
+                } else {
+                    // Window is taller than 16:9, fit to width
+                    this.canvas.style.width = Math.min(window.innerWidth * 0.95, 1920) + 'px';
+                    this.canvas.style.height = (parseFloat(this.canvas.style.width) / aspectRatio) + 'px';
+                }
+                
+                // Center the canvas
+                this.canvas.style.position = 'static';
+                
+                // Calculate scaling factors for input handling
+                this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
+                this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
+            }
             
             setupEventListeners() {
                 document.addEventListener('keydown', (e) => {
@@ -846,19 +811,19 @@ for (let i = 0; i < options.length; i++) {
             }
             
             changeScene(sceneName, scene, endCurrentScene = false) {
-    if (endCurrentScene) {
-        this.sceneMap.delete(this.currentScene);
-    }
-    
-    // Always create a fresh scene instance for PLAY and END scenes
-    if (sceneName === 'PLAY' || sceneName === 'END') {
-        this.sceneMap.set(sceneName, scene);
-    } else if (!this.sceneMap.has(sceneName)) {
-        this.sceneMap.set(sceneName, scene);
-    }
-    
-    this.currentScene = sceneName;
-}
+                if (endCurrentScene) {
+                    this.sceneMap.delete(this.currentScene);
+                }
+                
+                // Always create a fresh scene instance for PLAY and END scenes
+                if (sceneName === 'PLAY' || sceneName === 'END') {
+                    this.sceneMap.set(sceneName, scene);
+                } else if (!this.sceneMap.has(sceneName)) {
+                    this.sceneMap.set(sceneName, scene);
+                }
+                
+                this.currentScene = sceneName;
+            }
             
             gameLoop(currentTime = 0) {
                 if (!this.running) return;
