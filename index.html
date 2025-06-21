@@ -725,6 +725,7 @@ ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
                 // Set up canvas
                 this.resizeCanvas();
                 window.addEventListener('resize', () => this.resizeCanvas());
+                window.addEventListener('orientationchange', () => this.resizeCanvas());
                 
                 // Event listeners
                 this.setupEventListeners();
@@ -759,8 +760,11 @@ ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
                 this.canvas.style.position = 'static';
                 
                 // Calculate scaling factors for input handling
-                this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
-                this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
+                // this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
+                // this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
+                const rect = this.canvas.getBoundingClientRect();
+this.scaleX = this.canvas.width / rect.width;
+this.scaleY = this.canvas.height / rect.height;
             }
             
             setupEventListeners() {
