@@ -56,6 +56,31 @@
                 transform: translate(-50%, -50%);
             }
         }
+
+        @media (max-width: 768px) {
+    body {
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    }
+    
+    canvas {
+        border: none !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+    }
+    
+    .loading {
+        font-size: 18px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+    }
+}
         
         @media (max-height: 600px) {
             canvas {
@@ -349,6 +374,7 @@
                 this.journeyFinished = false;
                 this.clickLocked = false;
                 this.state = 'ShowOptions';
+                this.hasStarted = false; 
                 
                 this.pillarTitles = [
                     "Emotional", "Purpose", "Financial", "Physical",
@@ -397,28 +423,29 @@
             }
             
             updateTexts() {
-                this.optionRects = [];
-                const options = this.pillarOptions[this.currentPillar];
-                const isMobile = window.innerWidth <= 768;
-                
-                const startY = isMobile ? 320 : 450;
-                const spacing = isMobile ? 60 : 80;
-                const rectHeight = isMobile ? 40 : 50;
-                const rectWidth = isMobile ? 300 : 400;
-                
-                for (let i = 0; i < options.length; i++) {
-                    const y = startY + i * spacing;
-                    this.optionRects.push({
-                        x: 960 - rectWidth/2,
-                        y: y - rectHeight/2,
-                        width: rectWidth,
-                        height: rectHeight,
-                        text: options[i]
-                    });
-                }
-                
-                this.state = 'ShowOptions';
-            }
+    this.optionRects = [];
+    const options = this.pillarOptions[this.currentPillar];
+    const isMobile = window.innerWidth <= 768;
+    
+    // Mobile-optimized touch areas
+    const startY = isMobile ? 400 : 450;
+    const spacing = isMobile ? 80 : 80;
+    const rectHeight = isMobile ? 60 : 50;
+    const rectWidth = isMobile ? window.innerWidth * 0.8 : 400;
+    
+    for (let i = 0; i < options.length; i++) {
+        const y = startY + i * spacing;
+        this.optionRects.push({
+            x: isMobile ? window.innerWidth * 0.1 : 960 - rectWidth/2,
+            y: y - rectHeight/2,
+            width: rectWidth,
+            height: rectHeight,
+            text: options[i]
+        });
+    }
+    
+    this.state = 'ShowOptions';
+}
             
             loadItemTexture() {
                 if (this.currentPillar <= 7) {
@@ -533,24 +560,24 @@
                 }
                 
                 ctx.font = `${optionSize}px Arial`;
-                const options = this.pillarOptions[this.currentPillar];
-                const startY = isMobile ? 320 : 450;
-                const spacing = isMobile ? 60 : 80;
-                
-                for (let i = 0; i < options.length; i++) {
-                    const y = startY + i * spacing;
-                    
-                    if (isMobile) {
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-                        ctx.fillRect(canvas.width / 2 - 150, y - 20, 300, 40);
-                        ctx.strokeStyle = 'black';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(canvas.width / 2 - 150, y - 20, 300, 40);
-                    }
-                    
-                    ctx.fillStyle = 'black';
-                    ctx.fillText(options[i], canvas.width / 2, y);
-                }
+const options = this.pillarOptions[this.currentPillar];
+
+for (let i = 0; i < options.length; i++) {
+    const rect = this.optionRects[i];
+    
+    // Draw button background
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    
+    // Draw button border
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    
+    // Draw text centered in button
+    ctx.fillStyle = 'black';
+    ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2 + 5);
+}
                 
                 // Draw PNG images instead of pixel art
                 for (let anim of this.animatedItems) {
@@ -721,26 +748,35 @@
             }
             
             resizeCanvas() {
-                const aspectRatio = 1920 / 1080;
-                const windowAspectRatio = window.innerWidth / window.innerHeight;
-                const isMobile = window.innerWidth <= 768;
-                
-                if (isMobile) {
-                    this.canvas.style.width = window.innerWidth + 'px';
-                    this.canvas.style.height = window.innerHeight + 'px';
-                } else {
-                    if (windowAspectRatio > aspectRatio) {
-                        this.canvas.style.height = Math.min(window.innerHeight * 0.95, 1080) + 'px';
-                        this.canvas.style.width = (parseFloat(this.canvas.style.height) * aspectRatio) + 'px';
-                    } else {
-                        this.canvas.style.width = Math.min(window.innerWidth * 0.95, 1920) + 'px';
-                        this.canvas.style.height = (parseFloat(this.canvas.style.width) / aspectRatio) + 'px';
-                    }
-                }
-                
-                this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
-                this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
-            }
+    const aspectRatio = 1920 / 1080;
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // For mobile, use full viewport
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        this.canvas.style.width = viewportWidth + 'px';
+        this.canvas.style.height = viewportHeight + 'px';
+        
+        // Set canvas position
+        this.canvas.style.position = 'fixed';
+        this.canvas.style.top = '0';
+        this.canvas.style.left = '0';
+    } else {
+        this.canvas.style.position = 'static';
+        if (window.innerWidth / window.innerHeight > aspectRatio) {
+            this.canvas.style.height = Math.min(window.innerHeight * 0.95, 1080) + 'px';
+            this.canvas.style.width = (parseFloat(this.canvas.style.height) * aspectRatio) + 'px';
+        } else {
+            this.canvas.style.width = Math.min(window.innerWidth * 0.95, 1920) + 'px';
+            this.canvas.style.height = (parseFloat(this.canvas.style.width) / aspectRatio) + 'px';
+        }
+    }
+    
+    this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
+    this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
+}
             
             setupEventListeners() {
                 document.addEventListener('keydown', (e) => {
@@ -810,16 +846,19 @@
             }
             
             changeScene(sceneName, scene, endCurrentScene = false) {
-                if (endCurrentScene) {
-                    this.sceneMap.delete(this.currentScene);
-                }
-                
-                if (!this.sceneMap.has(sceneName)) {
-                    this.sceneMap.set(sceneName, scene);
-                }
-                
-                this.currentScene = sceneName;
-            }
+    if (endCurrentScene) {
+        this.sceneMap.delete(this.currentScene);
+    }
+    
+    // Always create a fresh scene instance for PLAY and END scenes
+    if (sceneName === 'PLAY' || sceneName === 'END') {
+        this.sceneMap.set(sceneName, scene);
+    } else if (!this.sceneMap.has(sceneName)) {
+        this.sceneMap.set(sceneName, scene);
+    }
+    
+    this.currentScene = sceneName;
+}
             
             gameLoop(currentTime = 0) {
                 if (!this.running) return;
