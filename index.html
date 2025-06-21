@@ -559,9 +559,14 @@
                 
                 // Draw PNG images instead of pixel art
                 for (let anim of this.animatedItems) {
-                    const size = (isMobile ? 50 : 80) * anim.currentScale;
+                    const size = (isMobile ? 80 : 120) * anim.currentScale;
                     const itemY = isMobile ? 900 : anim.y;
-                    const itemX = isMobile ? 50 + (this.animatedItems.indexOf(anim) * 60) : anim.x;
+                    //const itemX = isMobile ? 50 + (this.animatedItems.indexOf(anim) * 60) : anim.x;
+                    // const itemX = canvas.width / 2; // Center horizontally
+                    const spacing = isMobile ? 80 : 120;
+                    const totalWidth = (this.animatedItems.length - 1) * spacing;
+                    const startX = (canvas.width - totalWidth) / 2;
+                    const itemX = startX + (this.animatedItems.indexOf(anim) * spacing)
                     
                     this.drawPNGImage(ctx, anim.imageType, itemX, itemY, size);
                 }
