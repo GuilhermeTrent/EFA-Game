@@ -98,7 +98,7 @@ void Scene_Menu::sDoAction(const Command& action)
 		}
 		else if (action.name() == "PLAY")
 		{
-			//_game->changeScene("PLAY", std::make_shared<Scene_Frogger>(_game, m_levelPaths[m_menuIndex]));
+			_game->changeScene("PLAY", std::make_shared<Scene_Game>(_game, m_levelPaths[m_menuIndex]));
 		}
 		else if (action.name() == "QUIT")
 		{
