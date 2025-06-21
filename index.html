@@ -423,29 +423,29 @@
             }
             
             updateTexts() {
-    this.optionRects = [];
-    const options = this.pillarOptions[this.currentPillar];
-    const isMobile = window.innerWidth <= 768;
-    
-    // Mobile-optimized touch areas
-    const startY = isMobile ? 400 : 450;
-    const spacing = isMobile ? 80 : 80;
-    const rectHeight = isMobile ? 60 : 50;
-    const rectWidth = isMobile ? window.innerWidth * 0.8 : 400;
-    
-    for (let i = 0; i < options.length; i++) {
-        const y = startY + i * spacing;
-        this.optionRects.push({
-            x: isMobile ? window.innerWidth * 0.1 : 960 - rectWidth/2,
-            y: y - rectHeight/2,
-            width: rectWidth,
-            height: rectHeight,
-            text: options[i]
-        });
-    }
-    
-    this.state = 'ShowOptions';
-}
+                this.optionRects = [];
+                const options = this.pillarOptions[this.currentPillar];
+                const isMobile = window.innerWidth <= 768;
+                const canvas = this.game.canvas;
+                
+                const startY = isMobile ? 320 : 450;
+                const spacing = isMobile ? 60 : 80;
+                const rectHeight = isMobile ? 40 : 50;
+                const rectWidth = isMobile ? 300 : 400;
+                
+                for (let i = 0; i < options.length; i++) {
+                    const y = startY + i * spacing;
+                    this.optionRects.push({
+                        x: (canvas.width / 2) - rectWidth/2,
+                        y: y - rectHeight/2,
+                        width: rectWidth,
+                        height: rectHeight,
+                        text: options[i]
+                    });
+                }
+                
+                this.state = 'ShowOptions';
+            }
             
             loadItemTexture() {
                 if (this.currentPillar <= 7) {
