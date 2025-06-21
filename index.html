@@ -559,7 +559,7 @@
                 
                 // Draw PNG images instead of pixel art
                 for (let anim of this.animatedItems) {
-                    const size = (isMobile ? 30 : 50) * anim.currentScale;
+                    const size = (isMobile ? 50 : 80) * anim.currentScale;
                     const itemY = isMobile ? 900 : anim.y;
                     const itemX = isMobile ? 50 + (this.animatedItems.indexOf(anim) * 60) : anim.x;
                     
