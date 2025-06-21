@@ -406,9 +406,12 @@
                 const isMobile = window.innerWidth <= 768;
                 const canvas = this.game.canvas;
                 
-                const startY = isMobile ? 320 : 450;
-                const spacing = isMobile ? 70 : 80;
-                const rectHeight = isMobile ? 55 : 50;
+                // const startY = isMobile ? 320 : 450;
+                // const spacing = isMobile ? 70 : 80;
+                // const rectHeight = isMobile ? 55 : 50;
+                const startY = isMobile ? 380 : 500;
+const spacing = isMobile ? 80 : 90;
+const rectHeight = isMobile ? 60 : 60;
                 const rectWidth = isMobile ? 350 : 400;
                 
                 for (let i = 0; i < options.length; i++) {
@@ -461,8 +464,12 @@
                     const drawX = x - size / 2;
                     const drawY = y - size / 2;
                     
+                    ctx.save();
+ctx.globalAlpha = 1.0;
                     // Draw the image scaled to the desired size
                     ctx.drawImage(image, drawX, drawY, size, size);
+
+                    ctx.restore();
                 } else {
                     // Fallback: draw a colored circle if image not available
                     ctx.save();
@@ -554,7 +561,10 @@
                     
                     // Draw text centered in button
                     ctx.fillStyle = 'black';
-                    ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2 + 8);
+                   // ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2 + 8);
+                   ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
                 }
                 
                 // Draw PNG images instead of pixel art
