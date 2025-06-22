@@ -323,7 +323,7 @@
             handleAction(command) {
                 if (command.getType() === 'START') {
                     if (command.getName() === 'PLAY') {
-                        this.game.changeScene('PLAY', new Scene_Game(this.game));
+                        this.game.changeScene('PLAY', new Scene_Game(this.game, 0));
                     } else if (command.getName() === 'QUIT') {
                         this.onEnd();
                     }
@@ -331,7 +331,7 @@
             }
             
             handleClick(x, y) {
-                this.game.changeScene('PLAY', new Scene_Game(this.game));
+                this.game.changeScene('PLAY', new Scene_Game(this.game, 0));
             }
             
             onEnd() {
@@ -426,9 +426,9 @@
 
         // Game Scene
         class Scene_Game extends Scene {
-            constructor(gameEngine) {
-                super(gameEngine);
-                this.currentPillar = 0;
+            constructor(gameEngine, pillarIndex = 0) {
+    super(gameEngine);
+    this.currentPillar = pillarIndex;
                 this.TOTAL_PILLARS = 7;
                 this.journeyFinished = false;
                 this.clickLocked = false;
@@ -493,7 +493,7 @@
                         "When was the last time you felt fully rooted in your body—and what simple practice could you do right now to reconnect with that sense of stability?",
                         "What movement or ritual makes you feel most alive—and how might you carve out even five minutes today to honor that spark?",
                         "Which part of your daily rhythm feels out of sync—and what single change could bring you back into harmony?",
-                        "Think back to a moment when your body carried you through difficulty—what inner strength did you discover, and how can you draw on it now?"
+                        "Think back to a moment when your body carried you through difficulty—what inner strength did you discovered, and how can you draw on it now?"
                     ],
                     [
                         "What new possibility could you create if you leaned into change instead of resisting it?",
@@ -724,11 +724,10 @@
                         
                         console.log('Selected option:', rect.text);
                         
-                        // Get the reflection message for this option
                         const reflectionMessage = this.pillarReflections[this.currentPillar][rect.index];
-                        
-                        // Update pillar and load texture
-                        this.currentPillar++;
+// Create next scene FIRST with correct pillar index
+nextScene = new Scene_Game(this.game, this.currentPillar + 1);
+this.currentPillar++;  // Then update current scene's pillar
                         this.loadItemTexture();
                         
                         // Create next scene
