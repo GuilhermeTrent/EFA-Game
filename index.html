@@ -419,9 +419,13 @@
                 }
             }
             
-            continue() {
-                this.game.changeScene('PLAY', this.nextScene);
-            }
+           continue() {
+    // Add the collected item to the next scene if it's a game scene
+    if (this.nextScene instanceof Scene_Game) {
+        this.nextScene.loadItemTexture();
+    }
+    this.game.changeScene('PLAY', this.nextScene);
+}
         }
 
         // Game Scene
@@ -724,10 +728,6 @@
             // Get reflection for CURRENT pillar before advancing
             const reflectionMessage = this.pillarReflections[this.currentPillar][rect.index];
             
-            // Load texture for CURRENT pillar before advancing
-            const currentPillarForTexture = this.currentPillar;
-            this.loadItemTextureForPillar(currentPillarForTexture);
-            
             // Create next scene with advanced pillar
             let nextScene;
             if (this.currentPillar + 1 >= this.TOTAL_PILLARS) {
@@ -742,18 +742,7 @@
         }
     }
 }
-loadItemTextureForPillar(pillarIndex) {
-    const anim = {
-        currentScale: 0.0,
-        targetScale: 0.6,
-        speed: 2.5,
-        x: 100 + (this.animatedItems.length * 120),
-        y: 1000,
-        pillar: pillarIndex,
-        imageType: this.getPillarImageType(pillarIndex)
-    };
-    this.animatedItems.push(anim);
-}
+
             
             handleAction(command) {
                 // Handle keyboard actions if needed
