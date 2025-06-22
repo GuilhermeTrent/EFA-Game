@@ -714,7 +714,7 @@
                 }
             }
             
-            handleClick(x, y) {
+           handleClick(x, y) {
                 if (this.state !== 'ShowOptions') return;
                 
                 for (let i = 0; i < this.optionRects.length; i++) {
@@ -722,21 +722,17 @@
                     if (x >= rect.x && x <= rect.x + rect.width &&
                         y >= rect.y && y <= rect.y + rect.height) {
                         
-                        console.log('Selected option:', rect.text);
-                        
                         const reflectionMessage = this.pillarReflections[this.currentPillar][rect.index];
-// Create next scene FIRST with correct pillar index
-nextScene = new Scene_Game(this.game, this.currentPillar + 1);
-this.currentPillar++;  // Then update current scene's pillar
+                        
+                        // Load the texture for the current pillar
                         this.loadItemTexture();
                         
                         // Create next scene
                         let nextScene;
-                        if (this.currentPillar >= this.TOTAL_PILLARS) {
+                        if (this.currentPillar + 1 >= this.TOTAL_PILLARS) {
                             nextScene = new Scene_End(this.game);
-                            this.journeyFinished = true;
                         } else {
-                            nextScene = new Scene_Game(this.game);
+                            nextScene = new Scene_Game(this.game, this.currentPillar + 1);
                         }
                         
                         // Show reflection scene
