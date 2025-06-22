@@ -109,7 +109,7 @@
                     img.src = src;
                 });
             }
-            
+
             getFallbackColor(imageName) {
                 const colors = {
                     'heart': '#FF0000',
@@ -122,26 +122,26 @@
                 };
                 return colors[imageName] || '#888888';
             }
-            
+
             getImage(name) {
                 return this.images.get(name);
             }
-            
+
             async loadAllImages() {
                 const imagePaths = {
                     'heart': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/heart.png',
-                    'trophy': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/purpose.png', 
+                    'trophy': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/purpose.png',
                     'money': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/financial.png',
                     'plant': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/earth.png',
                     'brain': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/mental.png',
                     'ring': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/arm.png',
                     'flame': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/spiritual.png'
                 };
-                
+
                 for (const [name, path] of Object.entries(imagePaths)) {
                     this.loadingPromises.push(this.loadImage(name, path));
                 }
-                
+
                 try {
                     await Promise.all(this.loadingPromises);
                     console.log('All images loaded successfully');
@@ -159,15 +159,15 @@
                 this.active = true;
                 this.components = new Map();
             }
-            
+
             isActive() {
                 return this.active;
             }
-            
+
             destroy() {
                 this.active = false;
             }
-            
+
             getTag() {
                 return this.tag;
             }
@@ -180,26 +180,26 @@
                 this.totalEntities = 0;
                 this.entitiesToAdd = [];
             }
-            
+
             addEntity(tag) {
                 const entity = new Entity(this.totalEntities++, tag);
                 this.entitiesToAdd.push(entity);
                 return entity;
             }
-            
+
             getEntities(tag = null) {
                 if (tag === null) {
                     return this.entities;
                 }
                 return this.entityMap.get(tag) || [];
             }
-            
+
             update() {
                 this.removeDeadEntities(this.entities);
                 for (let [tag, entityVec] of this.entityMap) {
                     this.removeDeadEntities(entityVec);
                 }
-                
+
                 for (let entity of this.entitiesToAdd) {
                     this.entities.push(entity);
                     if (!this.entityMap.has(entity.getTag())) {
@@ -209,7 +209,7 @@
                 }
                 this.entitiesToAdd = [];
             }
-            
+
             removeDeadEntities(entityVec) {
                 for (let i = entityVec.length - 1; i >= 0; i--) {
                     if (!entityVec[i].isActive()) {
@@ -225,7 +225,7 @@
                 this.name = name;
                 this.type = type;
             }
-            
+
             getName() { return this.name; }
             getType() { return this.type; }
         }
@@ -240,30 +240,17 @@
                 this.hasEnded = false;
                 this.currentFrame = 0;
             }
-            
-            update(dt) {
-                // Override in subclasses
-            }
-            
-            render(ctx) {
-                // Override in subclasses
-            }
-            
-            handleAction(command) {
-                // Override in subclasses
-            }
-            
+
+            update(dt) {}
+            render(ctx) {}
+            handleAction(command) {}
             registerAction(key, action) {
                 this.commands.set(key, action);
             }
-            
             getActionMap() {
                 return this.commands;
             }
-            
-            onEnd() {
-                // Override in subclasses
-            }
+            onEnd() {}
         }
 
         // Menu Scene
@@ -272,33 +259,33 @@
                 super(gameEngine);
                 this.registerActions();
             }
-            
+
             registerActions() {
                 this.registerAction('Enter', 'PLAY');
                 this.registerAction('Escape', 'QUIT');
             }
-            
+
             update(dt) {
                 this.entityManager.update();
             }
-            
+
             render(ctx) {
                 const canvas = ctx.canvas;
                 const isMobile = window.innerWidth <= 768;
-                
+
                 ctx.fillStyle = '#549aa3';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
+
                 const titleSize = isMobile ? 80 : 100;
                 const subtitleSize = isMobile ? 45 : 60;
                 const buttonSize = isMobile ? 40 : 50;
                 const footerSize = isMobile ? 35 : 40;
-                
+
                 ctx.fillStyle = 'black';
                 ctx.font = `bold ${titleSize}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.fillText('7   Pillars   of   Self', canvas.width / 2, isMobile ? 150 : 250);
-                
+
                 ctx.font = `${subtitleSize}px Arial`;
                 const subtitleY = isMobile ? 220 : 400;
                 if (isMobile) {
@@ -307,7 +294,7 @@
                 } else {
                     ctx.fillText('A Journey of Self-Discovery and Growth', canvas.width / 2, subtitleY);
                 }
-                
+
                 ctx.font = `${buttonSize}px Arial`;
                 const buttonY = isMobile ? 350 : 700;
                 if (isMobile) {
@@ -315,30 +302,29 @@
                 } else {
                     ctx.fillText('Press Enter to Begin or Click Here', canvas.width / 2, buttonY);
                 }
-                
+
                 ctx.font = `${footerSize}px Arial`;
                 ctx.fillText('Emotional Fitness Academy', canvas.width / 2, isMobile ? 500 : 1000);
             }
-            
+
             handleAction(command) {
                 if (command.getType() === 'START') {
                     if (command.getName() === 'PLAY') {
-                        this.game.changeScene('PLAY', new Scene_Game(this.game, 0));
+                        this.game.changeScene('PLAY', new Scene_Game(this.game));
                     } else if (command.getName() === 'QUIT') {
                         this.onEnd();
                     }
                 }
             }
-            
+
             handleClick(x, y) {
-                this.game.changeScene('PLAY', new Scene_Game(this.game, 0));
+                this.game.changeScene('PLAY', new Scene_Game(this.game));
             }
-            
+
             onEnd() {
                 console.log('Game ended');
             }
         }
-
         // Reflection Scene
         class Scene_Reflection extends Scene {
             constructor(gameEngine, message, nextScene) {
@@ -347,68 +333,83 @@
                 this.nextScene = nextScene;
                 this.registerActions();
             }
-            
+
             registerActions() {
                 this.registerAction('Enter', 'CONTINUE');
                 this.registerAction('Escape', 'MENU');
             }
-            
+
             update(dt) {
                 this.entityManager.update();
             }
-            
+
             render(ctx) {
                 const canvas = ctx.canvas;
                 const isMobile = window.innerWidth <= 768;
-                
+
                 // Soft background color for reflection
                 ctx.fillStyle = '#f0f8ff';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
+
                 const titleSize = isMobile ? 50 : 60;
                 const messageSize = isMobile ? 32 : 40;
                 const instructionSize = isMobile ? 28 : 35;
-                
+
                 ctx.fillStyle = '#2c3e50';
                 ctx.font = `bold ${titleSize}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.fillText('Reflection', canvas.width / 2, isMobile ? 100 : 150);
-                
+
                 // Draw the reflection message
                 ctx.font = `${messageSize}px Arial`;
                 ctx.fillStyle = '#34495e';
-                
+
                 // Break the message into multiple lines for better readability
                 const words = this.message.split(' ');
                 const maxWordsPerLine = isMobile ? 6 : 10;
                 const lines = [];
-                
+
                 for (let i = 0; i < words.length; i += maxWordsPerLine) {
                     lines.push(words.slice(i, i + maxWordsPerLine).join(' '));
                 }
-                
+
                 const startY = isMobile ? 200 : 300;
                 const lineHeight = isMobile ? 45 : 55;
-                
+
                 lines.forEach((line, index) => {
                     ctx.fillText(line, canvas.width / 2, startY + index * lineHeight);
                 });
-                
+
+                // Draw the centered image related to the pillar
+                const imageType = this.game.lastImageType || 'heart';
+                const image = this.game.imageManager.getImage(imageType);
+                if (image) {
+                    const imageSize = isMobile ? 180 : 260;
+                    ctx.drawImage(image, canvas.width / 2 - imageSize / 2, startY + lines.length * lineHeight + 30, imageSize, imageSize);
+                }
+
+                // Draw the external link text
+                ctx.font = `${instructionSize}px Arial`;
+                ctx.fillStyle = '#2c3e50';
+                ctx.fillText('To know more details please visit:', canvas.width / 2, canvas.height - 180);
+                ctx.fillStyle = '#0000EE';
+                ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, canvas.height - 140);
+
                 // Instructions
                 ctx.font = `${instructionSize}px Arial`;
                 ctx.fillStyle = '#7f8c8d';
-                const instructionY = canvas.height - (isMobile ? 100 : 150);
+                const instructionY = canvas.height - (isMobile ? 100 : 80);
                 if (isMobile) {
                     ctx.fillText('Tap anywhere to continue', canvas.width / 2, instructionY);
                 } else {
                     ctx.fillText('Click anywhere or press Enter to continue', canvas.width / 2, instructionY);
                 }
             }
-            
+
             handleClick(x, y) {
                 this.continue();
             }
-            
+
             handleAction(command) {
                 if (command.getType() === 'START') {
                     if (command.getName() === 'CONTINUE') {
@@ -418,17 +419,16 @@
                     }
                 }
             }
-            
-       continue() {
-    this.game.changeScene('PLAY', this.nextScene);
-}
-        }
 
+            continue() {
+                this.game.changeScene('PLAY', this.nextScene);
+            }
+        }
         // Game Scene
         class Scene_Game extends Scene {
-            constructor(gameEngine, pillarIndex = 0) {
-    super(gameEngine);
-    this.currentPillar = pillarIndex;
+            constructor(gameEngine) {
+                super(gameEngine);
+                this.currentPillar = 0;
                 this.TOTAL_PILLARS = 7;
                 this.journeyFinished = false;
                 this.clickLocked = false;
@@ -493,7 +493,7 @@
                         "When was the last time you felt fully rooted in your body—and what simple practice could you do right now to reconnect with that sense of stability?",
                         "What movement or ritual makes you feel most alive—and how might you carve out even five minutes today to honor that spark?",
                         "Which part of your daily rhythm feels out of sync—and what single change could bring you back into harmony?",
-                        "Think back to a moment when your body carried you through difficulty—what inner strength did you discovered, and how can you draw on it now?"
+                        "Think back to a moment when your body carried you through difficulty—what inner strength did you discover, and how can you draw on it now?"
                     ],
                     [
                         "What new possibility could you create if you leaned into change instead of resisting it?",
@@ -514,29 +514,28 @@
                         "What simple, intentional act could you introduce into your day to call you back to presence, purpose, and prayer?"
                     ]
                 ];
-                
                 this.animatedItems = [];
                 this.optionRects = [];
-                
+
                 this.registerActions();
                 this.updateTexts();
             }
-            
+
             registerActions() {
                 this.registerAction('MouseClick', 'MOUSE_CLICK');
             }
-            
+
             updateTexts() {
                 this.optionRects = [];
                 const options = this.pillarOptions[this.currentPillar];
                 const isMobile = window.innerWidth <= 768;
                 const canvas = this.game.canvas;
-                
+
                 const startY = isMobile ? 380 : 500;
                 const spacing = isMobile ? 80 : 90;
                 const rectHeight = isMobile ? 60 : 60;
                 const rectWidth = isMobile ? 350 : 400;
-                
+
                 for (let i = 0; i < options.length; i++) {
                     const y = startY + i * spacing;
                     this.optionRects.push({
@@ -548,10 +547,10 @@
                         index: i
                     });
                 }
-                
+
                 this.state = 'ShowOptions';
             }
-            
+
             loadItemTexture() {
                 if (this.currentPillar <= 7) {
                     const anim = {
@@ -560,231 +559,91 @@
                         speed: 2.5,
                         x: 100 + (this.animatedItems.length * 120),
                         y: 1000,
-                       pillar: this.currentPillar,
-            imageType: this.getPillarImageType(this.currentPillar)
+                        pillar: this.currentPillar - 1,
+                        imageType: this.getPillarImageType(this.currentPillar - 1)
                     };
                     this.animatedItems.push(anim);
                 }
             }
-            
+
             getPillarImageType(pillarIndex) {
                 const imageTypes = [
-                    'heart',
-                    'trophy',
-                    'money',
-                    'ring',
-                    'brain',
-                    'plant',
-                    'flame'
+                    'heart',    // Emotional
+                    'trophy',   // Purpose
+                    'money',    // Financial
+                    'ring',     // Physical
+                    'brain',    // Mental
+                    'plant',    // Environmental
+                    'flame'     // Spiritual
                 ];
                 return imageTypes[pillarIndex] || 'heart';
             }
-            
-            drawPNGImage(ctx, imageType, x, y, size) {
-                const image = this.game.imageManager.getImage(imageType);
-                if (image) {
-                    const drawX = x - size / 2;
-                    const drawY = y - size / 2;
-                    
-                    ctx.save();
-                    ctx.globalAlpha = 1.0;
-                    ctx.drawImage(image, drawX, drawY, size, size);
-                    ctx.restore();
-                } else {
-                    ctx.save();
-                    ctx.fillStyle = this.getFallbackColor(imageType);
-                    ctx.beginPath();
-                    ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.restore();
-                }
-            }
-            
-            getFallbackColor(imageType) {
-                const colors = {
-                    'heart': '#FF0000',
-                    'trophy': '#FFD700',
-                    'money': '#00AA00',
-                    'plant': '#228B22',
-                    'brain': '#FF8C00',
-                    'ring': '#FFD700',
-                    'flame': '#FF4500'
-                };
-                return colors[imageType] || '#888888';
-            }
-            
-            update(dt) {
-                if (this.currentPillar >= this.TOTAL_PILLARS) {
-                    return;
-                }
-                
-                for (let anim of this.animatedItems) {
-                    if (anim.currentScale < anim.targetScale) {
-                        anim.currentScale += dt * anim.speed;
-                        if (anim.currentScale > anim.targetScale) {
-                            anim.currentScale = anim.targetScale;
-                        }
-                    }
-                }
-            }
-            
-            render(ctx) {
-                if (this.currentPillar >= this.TOTAL_PILLARS) {
-                    return;
-                }
-                
-                const canvas = ctx.canvas;
-                const isMobile = window.innerWidth <= 768;
-                
-                ctx.fillStyle = this.pillarColors[this.currentPillar];
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                const titleSize = isMobile ? 70 : 80;
-                const questionSize = isMobile ? 32 : 40;
-                const optionSize = isMobile ? 36 : 45;
-                
-                ctx.fillStyle = 'black';
-                ctx.font = `bold ${titleSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(this.pillarTitles[this.currentPillar], canvas.width / 2, isMobile ? 100 : 200);
-                
-                // Draw the pillar question
-                ctx.font = `${questionSize}px Arial`;
-                const question = this.pillarQuestions[this.currentPillar];
-                const words = question.split(' ');
-                const maxWordsPerLine = isMobile ? 8 : 12;
-                const lines = [];
-                
-                for (let i = 0; i < words.length; i += maxWordsPerLine) {
-                    lines.push(words.slice(i, i + maxWordsPerLine).join(' '));
-                }
-                
-                const questionStartY = isMobile ? 160 : 280;
-                const questionLineHeight = isMobile ? 40 : 50;
-                
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, canvas.width / 2, questionStartY + index * questionLineHeight);
-                });
-                
-                // Draw options
-                ctx.font = `${optionSize}px Arial`;
-                const options = this.pillarOptions[this.currentPillar];
 
-                for (let i = 0; i < options.length; i++) {
-                    const rect = this.optionRects[i];
-                    
-                    // Draw button background
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-                    
-                    // Draw button border
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
-                    
-                    // Draw text centered in button
-                    ctx.fillStyle = 'black';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
-                }
-                
-                // Draw collected items
-                for (let anim of this.animatedItems) {
-                    const size = (isMobile ? 80 : 120) * anim.currentScale;
-                    const itemY = isMobile ? 900 : anim.y;
-                    const spacing = isMobile ? 80 : 120;
-                    const totalWidth = (this.animatedItems.length - 1) * spacing;
-                    const startX = (canvas.width - totalWidth) / 2;
-                    const itemX = startX + (this.animatedItems.indexOf(anim) * spacing);
-                    
-                    this.drawPNGImage(ctx, anim.imageType, itemX, itemY, size);
-                }
-                
-                if (isMobile) {
-                    ctx.fillStyle = 'black';
-                    ctx.font = '28px Arial';
-                    ctx.textAlign = 'right';
-                    ctx.fillText(`${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`, canvas.width - 50, 50);
-                } else {
-                    ctx.fillStyle = 'black';
-                    ctx.font = '35px Arial';
-                    ctx.textAlign = 'right';
-                    ctx.fillText(`${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`, canvas.width - 100, 80);
-                }
-            }
             handleClick(x, y) {
                 if (this.state !== 'ShowOptions') return;
-                
+
                 for (let i = 0; i < this.optionRects.length; i++) {
                     const rect = this.optionRects[i];
                     if (x >= rect.x && x <= rect.x + rect.width &&
                         y >= rect.y && y <= rect.y + rect.height) {
-                        
-                        // Add the collected item for the CURRENT pillar
-                        this.loadItemTexture();
-                        
-                        // Get reflection for CURRENT pillar
+
+                        console.log('Selected option:', rect.text);
+
+                        // Get the reflection message for this option
                         const reflectionMessage = this.pillarReflections[this.currentPillar][rect.index];
-                        
-                        // Create next scene with advanced pillar
-                        let nextScene;
-                        if (this.currentPillar + 1 >= this.TOTAL_PILLARS) {
-                            nextScene = new Scene_End(this.game);
-                        } else {
-                            nextScene = new Scene_Game(this.game, this.currentPillar + 1);
-                        }
-                        
+
+                        // Update pillar and load texture
+                        this.currentPillar++;
+                        this.loadItemTexture();
+
                         // Show reflection scene
+                        this.game.lastImageType = this.getPillarImageType(this.currentPillar - 1);
+                        let nextScene;
+                        if (this.currentPillar >= this.TOTAL_PILLARS) {
+                            nextScene = new Scene_End(this.game);
+                            this.journeyFinished = true;
+                        } else {
+                            nextScene = new Scene_Game(this.game);
+                        }
+
                         this.game.changeScene('REFLECTION', new Scene_Reflection(this.game, reflectionMessage, nextScene));
                         break;
                     }
                 }
             }
-
-            
-            handleAction(command) {
-                // Handle keyboard actions if needed
-            }
-            
-            onEnd() {
-                // Scene cleanup
-            }
-        }
-
         // End Scene
         class Scene_End extends Scene {
             constructor(gameEngine) {
                 super(gameEngine);
                 this.registerActions();
             }
-            
+
             registerActions() {
                 this.registerAction('Escape', 'QUIT');
             }
-            
+
             update(dt) {
                 // No updates needed
             }
-            
+
             render(ctx) {
                 const canvas = ctx.canvas;
                 const isMobile = window.innerWidth <= 768;
-                
+
                 ctx.fillStyle = '#549aa3';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
+
                 const titleSize = isMobile ? 80 : 100;
                 const subtitleSize = isMobile ? 45 : 60;
                 const footerSize = isMobile ? 40 : 50;
                 const linkSize = isMobile ? 32 : 45;
                 const instructionSize = isMobile ? 28: 30;
-                
+
                 ctx.fillStyle = 'black';
                 ctx.font = `bold ${titleSize}px Arial`;
                 ctx.textAlign = 'center';
                 ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 150 : 250);
-                
+
                 ctx.font = `${subtitleSize}px Arial`;
                 const subtitleY = isMobile ? 220 : 400;
                 if (isMobile) {
@@ -793,7 +652,7 @@
                 } else {
                     ctx.fillText('You have discovered all 7 Pillars of Self!', canvas.width / 2, subtitleY);
                 }
-                
+
                 ctx.font = `${footerSize}px Arial`;
                 const footerY = isMobile ? 350 : 600;
                 if (isMobile) {
@@ -802,11 +661,18 @@
                 } else {
                     ctx.fillText('Keep growing with Emotional Fitness Academy', canvas.width / 2, footerY);
                 }
-                
+
                 ctx.font = `${linkSize}px Arial`;
                 const linkY = isMobile ? 480 : 750;
-                ctx.fillText('Learn more at: https://efitacademy.ca/', canvas.width / 2, linkY);
-                
+                ctx.fillStyle = '#0000EE';
+                ctx.fillText('https://efitacademy.ca/booking/', canvas.width / 2, linkY);
+                this.linkRect = {
+                    x: canvas.width / 2 - 400,
+                    y: linkY - 40,
+                    width: 800,
+                    height: 60
+                };
+
                 ctx.font = `${instructionSize}px Arial`;
                 const instructionY = isMobile ? 550 : 900;
                 if (isMobile) {
@@ -815,22 +681,28 @@
                     ctx.fillText('Click anywhere to return to menu', canvas.width / 2, instructionY);
                 }
             }
-            
+
             handleClick(x, y) {
+                if (this.linkRect) {
+                    if (x >= this.linkRect.x && x <= this.linkRect.x + this.linkRect.width &&
+                        y >= this.linkRect.y && y <= this.linkRect.y + this.linkRect.height) {
+                        window.open('https://efitacademy.ca/booking/', '_blank');
+                        return;
+                    }
+                }
                 this.game.changeScene('MENU', new Scene_Menu(this.game));
             }
-            
+
             handleAction(command) {
                 if (command.getType() === 'START' && command.getName() === 'QUIT') {
                     this.onEnd();
                 }
             }
-            
+
             onEnd() {
                 console.log('Exiting game');
             }
         }
-
         // Main Game Engine
         class GameEngine {
             constructor() {
@@ -841,86 +713,77 @@
                 this.sceneMap = new Map();
                 this.simulationSpeed = 1;
                 this.imageManager = new ImageManager();
-                
+
                 this.initializeGame();
             }
-            
+
             async initializeGame() {
                 // Load all images first
                 await this.imageManager.loadAllImages();
-                
+
                 // Set up canvas
                 this.resizeCanvas();
                 window.addEventListener('resize', () => this.resizeCanvas());
                 window.addEventListener('orientationchange', () => this.resizeCanvas());
-                
+
                 // Event listeners
                 this.setupEventListeners();
-                
+
                 // Start with menu scene
                 this.changeScene('MENU', new Scene_Menu(this));
-                
+
                 // Hide loading
                 document.getElementById('loading').style.display = 'none';
-                
+
                 // Start game loop
                 this.lastTime = 0;
                 this.gameLoop();
             }
-            
+
             resizeCanvas() {
                 const aspectRatio = 1920 / 1080; // 16:9 aspect ratio
                 const isMobile = window.innerWidth <= 768;
-                
-                // Always maintain aspect ratio, even on mobile
+
                 if (window.innerWidth / window.innerHeight > aspectRatio) {
-                    // Window is wider than 16:9, fit to height
                     this.canvas.style.height = Math.min(window.innerHeight * 0.95, 1080) + 'px';
                     this.canvas.style.width = (parseFloat(this.canvas.style.height) * aspectRatio) + 'px';
                 } else {
-                    // Window is taller than 16:9, fit to width
                     this.canvas.style.width = Math.min(window.innerWidth * 0.95, 1920) + 'px';
                     this.canvas.style.height = (parseFloat(this.canvas.style.width) / aspectRatio) + 'px';
                 }
-                
-                // Center the canvas
-                this.canvas.style.position = 'static';
-                
-                // Calculate scaling factors for input handling
-                // this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
-                // this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
+
                 const rect = this.canvas.getBoundingClientRect();
-this.scaleX = this.canvas.width / rect.width;
-this.scaleY = this.canvas.height / rect.height;
+                this.scaleX = this.canvas.width / rect.width;
+                this.scaleY = this.canvas.height / rect.height;
             }
-            
+
             setupEventListeners() {
                 document.addEventListener('keydown', (e) => {
                     this.handleKeyDown(e);
                 });
-                
+
                 this.canvas.addEventListener('click', (e) => {
                     this.handleMouseClick(e);
                 });
-                
+
                 this.canvas.addEventListener('touchstart', (e) => {
                     e.preventDefault();
                     this.handleTouch(e);
                 });
-                
+
                 this.canvas.addEventListener('touchend', (e) => {
                     e.preventDefault();
                 });
-                
+
                 this.canvas.addEventListener('touchmove', (e) => {
                     e.preventDefault();
                 });
-                
+
                 this.canvas.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                 });
             }
-            
+
             handleKeyDown(e) {
                 const scene = this.getCurrentScene();
                 if (scene) {
@@ -931,70 +794,69 @@ this.scaleY = this.canvas.height / rect.height;
                     }
                 }
             }
-            
+
             handleMouseClick(e) {
                 const rect = this.canvas.getBoundingClientRect();
                 const x = (e.clientX - rect.left) * this.scaleX;
                 const y = (e.clientY - rect.top) * this.scaleY;
-                
+
                 const scene = this.getCurrentScene();
                 if (scene && scene.handleClick) {
                     scene.handleClick(x, y);
                 }
             }
-            
+
             handleTouch(e) {
                 if (e.touches.length > 0) {
                     const rect = this.canvas.getBoundingClientRect();
                     const touch = e.touches[0];
                     const x = (touch.clientX - rect.left) * this.scaleX;
                     const y = (touch.clientY - rect.top) * this.scaleY;
-                    
+
                     const scene = this.getCurrentScene();
                     if (scene && scene.handleClick) {
                         scene.handleClick(x, y);
                     }
                 }
             }
-            
+
             getCurrentScene() {
                 return this.sceneMap.get(this.currentScene);
             }
-            
+
             changeScene(sceneName, scene, endCurrentScene = false) {
                 if (endCurrentScene) {
                     this.sceneMap.delete(this.currentScene);
                 }
-                
-                // Always create a fresh scene instance for PLAY and END scenes
+
                 if (sceneName === 'PLAY' || sceneName === 'END') {
                     this.sceneMap.set(sceneName, scene);
                 } else if (!this.sceneMap.has(sceneName)) {
                     this.sceneMap.set(sceneName, scene);
                 }
-                
+
                 this.currentScene = sceneName;
             }
-            
+
             gameLoop(currentTime = 0) {
                 if (!this.running) return;
-                
+
                 const deltaTime = (currentTime - this.lastTime) / 1000;
                 this.lastTime = currentTime;
-                
+
                 const scene = this.getCurrentScene();
                 if (scene) {
                     scene.update(deltaTime);
                     scene.render(this.ctx);
                 }
-                
+
                 requestAnimationFrame((time) => this.gameLoop(time));
             }
-            
+
             isRunning() {
                 return this.running;
             }
-            
+
             quit() {
                 this.running = false;
                 console.log('Game quit');
