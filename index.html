@@ -137,7 +137,16 @@
                     'plant': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/earth.png',
                     'brain': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/mental.png',
                     'ring': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/arm.png',
-                    'flame': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/spiritual.png'
+                    'flame': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/spiritual.png',
+
+                    // New reflection images
+                    'emotional-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Emotional%20.png',
+                    'purpose-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Purpose.png',
+                    'financial-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/financial.png',
+                    'physical-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/physical.png',
+                    'mental-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Mental.png',
+                    'environmental-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/environmental.png',
+                    'spiritual-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/spiritual.png',
                 };
 
                 for (const [name, path] of Object.entries(imagePaths)) {
@@ -343,14 +352,15 @@
 
         // Reflection Scene
         class Scene_Reflection extends Scene {
-            constructor(gameEngine, message, onContinueCallback) {
+            constructor(gameEngine, message, reflectionImageType, onContinueCallback) {
                 super(gameEngine);
                 this.message = message;
-                this.onContinueCallback = onContinueCallback; // ✅ Now properly assigned
+                this.reflectionImageType = reflectionImageType; // Changed from pillarImageType
+                this.onContinueCallback = onContinueCallback;
                 this.registerActions();
             }
 
-            continue() { // ✅ Fixed indentation
+            continue() {
                 this.onContinueCallback();
             }
 
@@ -361,6 +371,40 @@
 
             update(dt) {
                 this.entityManager.update();
+            }
+
+            // Add image drawing methods
+            drawPNGImage(ctx, imageType, x, y, size) {
+                const image = this.game.imageManager.getImage(imageType);
+                if (image) {
+                    const drawX = x - size / 2;
+                    const drawY = y - size / 2;
+
+                    ctx.save();
+                    ctx.globalAlpha = 1.0;
+                    ctx.drawImage(image, drawX, drawY, size, size);
+                    ctx.restore();
+                } else {
+                    ctx.save();
+                    ctx.fillStyle = this.getFallbackColor(imageType);
+                    ctx.beginPath();
+                    ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            getFallbackColor(imageType) {
+                const colors = {
+                    'heart': '#FF0000',
+                    'trophy': '#FFD700',
+                    'money': '#00AA00',
+                    'plant': '#228B22',
+                    'brain': '#FF8C00',
+                    'ring': '#FFD700',
+                    'flame': '#FF4500'
+                };
+                return colors[imageType] || '#888888';
             }
 
             render(ctx) {
@@ -400,6 +444,11 @@
                     ctx.fillText(line, canvas.width / 2, startY + index * lineHeight);
                 });
 
+                // Draw the reflection image below the text
+                const imageY = startY + (lines.length * lineHeight) + (isMobile ? 80 : 100);
+                const imageSize = isMobile ? 120 : 150;
+                this.drawPNGImage(ctx, this.reflectionImageType, canvas.width / 2, imageY, imageSize);
+
                 // Instructions
                 ctx.font = `${instructionSize}px Arial`;
                 ctx.fillStyle = '#7f8c8d';
@@ -424,13 +473,11 @@
                     }
                 }
             }
-
-
         }
 
         // Game Scene
         class Scene_Game extends Scene {
-            constructor(gameEngine, pillarIndex = 0) {
+            constructor(gameEngine, pillarIndex = 0, previousItems = []) {
                 super(gameEngine);
                 this.currentPillar = pillarIndex;
                 this.TOTAL_PILLARS = 7;
@@ -438,6 +485,7 @@
                 this.clickLocked = false;
                 this.state = 'ShowOptions';
                 this.hasStarted = false;
+
 
                 this.pillarTitles = [
                     "Emotional", "Purpose", "Financial", "Physical",
@@ -519,7 +567,7 @@
                     ]
                 ];
 
-                this.animatedItems = [];
+                this.animatedItems = [...previousItems];
                 this.optionRects = [];
 
                 this.registerActions();
@@ -725,36 +773,41 @@
                     if (x >= rect.x && x <= rect.x + rect.width &&
                         y >= rect.y && y <= rect.y + rect.height) {
 
-                        // Get reflection for CURRENT pillar and selected option
                         const reflectionMessage = this.pillarReflections[this.currentPillar][rect.index];
                         const currentPillarIndex = this.currentPillar;
 
-                        // Add the collected item for the CURRENT pillar before switching scenes
-                        this.loadItemTexture();
+                        // Get the reflection image for this pillar
+                        const reflectionImageType = this.getReflectionImageType(this.currentPillar);
 
-                        // Create reflection scene with proper callback
-                        const reflectionScene = new Scene_Reflection(this.game, reflectionMessage, () => {
-                            // This callback runs when user continues from reflection
-                            console.log('Reflection continue callback called, current pillar:', currentPillarIndex);
+                        const reflectionScene = new Scene_Reflection(this.game, reflectionMessage, reflectionImageType, () => {
+                            // Add collected item and continue
+                            this.loadItemTexture();
+
                             if (currentPillarIndex + 1 >= this.TOTAL_PILLARS) {
-                                // All pillars completed, show end scene
-                                console.log('All pillars completed, showing end scene');
                                 this.game.changeScene('END', new Scene_End(this.game));
                             } else {
-                                // Move to next pillar
-                                console.log('Moving to next pillar:', currentPillarIndex + 1);
-                                this.game.changeScene('PLAY', new Scene_Game(this.game, currentPillarIndex + 1));
+                                this.game.changeScene('PLAY', new Scene_Game(this.game, currentPillarIndex + 1, this.animatedItems));
                             }
                         });
 
-                        // Add the collected item for the CURRENT pillar before switching scenes
-                        this.loadItemTexture();
-
-                        // Switch to reflection scene
                         this.game.changeScene('REFLECTION', reflectionScene);
                         break;
                     }
                 }
+            }
+
+            // Add this new method to Scene_Game
+            getReflectionImageType(pillarIndex) {
+                const reflectionImageTypes = [
+                    'emotional-reflection',  // Your watercolor heart image
+                    'purpose-reflection',
+                    'financial-reflection',
+                    'physical-reflection',
+                    'mental-reflection',
+                    'environmental-reflection',
+                    'spiritual-reflection'
+                ];
+                return reflectionImageTypes[pillarIndex] || 'emotional-reflection';
             }
 
 
@@ -772,6 +825,8 @@
             constructor(gameEngine) {
                 super(gameEngine);
                 this.registerActions();
+                this.bookingLinkArea = null;
+                this.fundamentallyMeLinkArea = null;
             }
 
             registerActions() {
@@ -818,21 +873,84 @@
                     ctx.fillText('Keep growing with Emotional Fitness Academy', canvas.width / 2, footerY);
                 }
 
+
+
                 ctx.font = `${linkSize}px Arial`;
                 const linkY = isMobile ? 480 : 750;
-                ctx.fillText('Learn more at: https://efitacademy.ca/', canvas.width / 2, linkY);
-
-                ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 550 : 900;
+                // First clickable link - fundamentally-me
+                ctx.fillStyle = '#0066cc'; // Blue color for link
+                ctx.font = `bold ${linkSize}px Arial`;
                 if (isMobile) {
-                    ctx.fillText('Tap anywhere to return to menu', canvas.width / 2, instructionY);
+                    ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
+                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 40);
+
+                    // Store the fundamentally-me link area for click detection
+                    this.fundamentallyMeLinkArea = {
+                        x: canvas.width / 2 - 350,
+                        y: linkY + 40 - 30,
+                        width: 700,
+                        height: 60
+                    };
                 } else {
-                    ctx.fillText('Click anywhere to return to menu', canvas.width / 2, instructionY);
+                    ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
+                    // Blue link on next line for PC too
+                    ctx.fillStyle = '#0066cc';
+                    ctx.font = `bold ${linkSize}px Arial`;
+                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 60);
+
+                    // Store the fundamentally-me link area for click detection
+                    this.fundamentallyMeLinkArea = {
+                        x: canvas.width / 2 - 400,
+                        y: linkY + 60 - 30,
+                        width: 800,
+                        height: 60
+                    };
+                }
+
+                // Second clickable link - booking
+                const bookingY = isMobile ? 620 : 870;
+                ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
+
+                // Store the booking link area for click detection
+                this.bookingLinkArea = {
+                    x: canvas.width / 2 - 300,
+                    y: bookingY - 30,
+                    width: 600,
+                    height: 60
+                };
+
+                ctx.fillStyle = 'black'; // Reset color
+                ctx.font = `${instructionSize}px Arial`;
+                const instructionY = isMobile ? 700 : 950;
+                if (isMobile) {
+                    ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
+                } else {
+                    ctx.fillText('Click links above or click elsewhere to return to menu', canvas.width / 2, instructionY);
                 }
             }
 
             handleClick(x, y) {
-                this.game.changeScene('MENU', new Scene_Menu(this.game));
+
+                // Check if click is on fundamentally-me link
+                if (this.fundamentallyMeLinkArea &&
+                    x >= this.fundamentallyMeLinkArea.x &&
+                    x <= this.fundamentallyMeLinkArea.x + this.fundamentallyMeLinkArea.width &&
+                    y >= this.fundamentallyMeLinkArea.y &&
+                    y <= this.fundamentallyMeLinkArea.y + this.fundamentallyMeLinkArea.height) {
+                    // Open fundamentally-me link
+                    window.open('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', '_blank');
+                }
+                else if (this.bookingLinkArea &&
+                    x >= this.bookingLinkArea.x &&
+                    x <= this.bookingLinkArea.x + this.bookingLinkArea.width &&
+                    y >= this.bookingLinkArea.y &&
+                    y <= this.bookingLinkArea.y + this.bookingLinkArea.height) {
+                    // Open booking link
+                    window.open('https://efitacademy.ca/booking/', '_blank');
+                } else {
+                    // Return to menu for any other click
+                    this.game.changeScene('MENU', new Scene_Menu(this.game));
+                }
             }
 
             handleAction(command) {
