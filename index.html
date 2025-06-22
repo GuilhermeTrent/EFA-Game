@@ -48,7 +48,6 @@
             
             canvas {
                 border: 1px solid #333;
-                /* Allow pinch-to-zoom on mobile for accessibility */
                 touch-action: pinch-zoom;
             }
             
@@ -98,7 +97,6 @@
                     };
                     img.onerror = () => {
                         console.warn(`Failed to load image: ${src}. Using fallback.`);
-                        // Create a fallback colored rectangle
                         const canvas = document.createElement('canvas');
                         canvas.width = 64;
                         canvas.height = 64;
@@ -130,7 +128,6 @@
             }
             
             async loadAllImages() {
-                // Define your image paths here
                 const imagePaths = {
                     'heart': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/heart.png',
                     'trophy': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/purpose.png', 
@@ -141,7 +138,6 @@
                     'flame': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/spiritual.png'
                 };
                 
-                // Load all images
                 for (const [name, path] of Object.entries(imagePaths)) {
                     this.loadingPromises.push(this.loadImage(name, path));
                 }
@@ -343,6 +339,91 @@
             }
         }
 
+        // Reflection Scene
+        class Scene_Reflection extends Scene {
+            constructor(gameEngine, message, nextScene) {
+                super(gameEngine);
+                this.message = message;
+                this.nextScene = nextScene;
+                this.registerActions();
+            }
+            
+            registerActions() {
+                this.registerAction('Enter', 'CONTINUE');
+                this.registerAction('Escape', 'MENU');
+            }
+            
+            update(dt) {
+                this.entityManager.update();
+            }
+            
+            render(ctx) {
+                const canvas = ctx.canvas;
+                const isMobile = window.innerWidth <= 768;
+                
+                // Soft background color for reflection
+                ctx.fillStyle = '#f0f8ff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const titleSize = isMobile ? 50 : 60;
+                const messageSize = isMobile ? 32 : 40;
+                const instructionSize = isMobile ? 28 : 35;
+                
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = `bold ${titleSize}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.fillText('Reflection', canvas.width / 2, isMobile ? 100 : 150);
+                
+                // Draw the reflection message
+                ctx.font = `${messageSize}px Arial`;
+                ctx.fillStyle = '#34495e';
+                
+                // Break the message into multiple lines for better readability
+                const words = this.message.split(' ');
+                const maxWordsPerLine = isMobile ? 6 : 10;
+                const lines = [];
+                
+                for (let i = 0; i < words.length; i += maxWordsPerLine) {
+                    lines.push(words.slice(i, i + maxWordsPerLine).join(' '));
+                }
+                
+                const startY = isMobile ? 200 : 300;
+                const lineHeight = isMobile ? 45 : 55;
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, canvas.width / 2, startY + index * lineHeight);
+                });
+                
+                // Instructions
+                ctx.font = `${instructionSize}px Arial`;
+                ctx.fillStyle = '#7f8c8d';
+                const instructionY = canvas.height - (isMobile ? 100 : 150);
+                if (isMobile) {
+                    ctx.fillText('Tap anywhere to continue', canvas.width / 2, instructionY);
+                } else {
+                    ctx.fillText('Click anywhere or press Enter to continue', canvas.width / 2, instructionY);
+                }
+            }
+            
+            handleClick(x, y) {
+                this.continue();
+            }
+            
+            handleAction(command) {
+                if (command.getType() === 'START') {
+                    if (command.getName() === 'CONTINUE') {
+                        this.continue();
+                    } else if (command.getName() === 'MENU') {
+                        this.game.changeScene('MENU', new Scene_Menu(this.game));
+                    }
+                }
+            }
+            
+            continue() {
+                this.game.changeScene('PLAY', this.nextScene);
+            }
+        }
+
         // Game Scene
         class Scene_Game extends Scene {
             constructor(gameEngine) {
@@ -359,14 +440,14 @@
                     "Mental", "Environmental", "Spiritual"
                 ];
                 
-                this.pillarTexts = [
-                    "How do you feel today?",
-                    "What inspires you?",
-                    "Make a financial choice.",
-                    "What does your body need right now?",
-                    "Choose a helpful thought.",
-                    "How will you support the planet today?",
-                    "Find your inner calm."
+                this.pillarQuestions = [
+                    "Which of these words most reflects the state of your heart right now?",
+                    "Which of these words most reflects where you're being called to step forward in your life?",
+                    "Which of these words best describes the relationship you want with your finances today?",
+                    "Which of these words most speaks to your body's wisdom in this moment?",
+                    "Which of these words most resonates with the mindset you'd like to strengthen today?",
+                    "Which of these words most captures how you want to engage with your environment today?",
+                    "Which of these words most speaks to your spirit's calling in this moment?"
                 ];
                 
                 this.pillarColors = [
@@ -380,13 +461,58 @@
                 ];
                 
                 this.pillarOptions = [
-                    ["Anxious", "Calm", "Sad", "Motivated"],
-                    ["Helping others", "Personal growth", "Family", "Adventure"],
-                    ["Save", "Spend", "Invest", "Ignore"],
-                    ["Rest", "Stretch", "Move", "Breathe"],
-                    ["Positive thought", "Gratitude", "Focus", "Letting go"],
-                    ["Plant a tree", "Pick up litter", "Recycle", "Save water"],
-                    ["Meditate", "Pray", "Sing", "Silence"]
+                    ["Awareness", "Vulnerability", "Compassion", "Connection"],
+                    ["Vision", "Legacy", "Calling", "Contribution"],
+                    ["Security", "Abundance", "Discipline", "Growth"],
+                    ["Grounding", "Vitality", "Balance", "Resilience"],
+                    ["Adaptability", "Control", "Resilience", "Optimism"],
+                    ["Stewardship", "Sanctuary", "Regeneration", "Harmony"],
+                    ["Transcendence", "Sacredness", "Alignment", "Ritual"]
+                ];
+                
+                this.pillarReflections = [
+                    [
+                        "Pause for a moment—what emotion is rising within you right now, and what might it be trying to teach you?",
+                        "What truth are you hiding from yourself that, if spoken aloud, could set you free?",
+                        "How would your inner dialogue change today if you treated yourself with the same kindness you extend to others?",
+                        "Where in your life do you long for deeper feeling or belonging—and what small step could you take today to build that bridge?"
+                    ],
+                    [
+                        "Close your eyes—what future do you see for yourself—and what's one bold step toward bringing that vision to life?",
+                        "When people tell your story years from now, what impact do you hope they remember—and how can you begin creating that today?",
+                        "What activity pulls you into flow so completely you lose track of time—and how might you honor that calling more often?",
+                        "Think of someone who needs what you have to give—what's the smallest way you could reach out and offer your gifts right now?"
+                    ],
+                    [
+                        "How would your life shift if you felt truly protected against tomorrow's uncertainties—and what first step can you take to build that safety net?",
+                        "Where in your finances do you already experience plenty—and how could you cultivate that sense of plenty to overflow into other areas of your life?",
+                        "What habit around spending or saving feels hardest to maintain—and what gentle tweak could you introduce right now to strengthen your financial momentum?",
+                        "Imagine your money as a seed—what would it take to nourish it so that it flourishes, supports you, and seeds new possibilities?"
+                    ],
+                    [
+                        "When was the last time you felt fully rooted in your body—and what simple practice could you do right now to reconnect with that sense of stability?",
+                        "What movement or ritual makes you feel most alive—and how might you carve out even five minutes today to honor that spark?",
+                        "Which part of your daily rhythm feels out of sync—and what single change could bring you back into harmony?",
+                        "Think back to a moment when your body carried you through difficulty—what inner strength did you discover, and how can you draw on it now?"
+                    ],
+                    [
+                        "What new possibility could you create if you leaned into change instead of resisting it?",
+                        "Where in your life do you feel most out of control—and what small action could bring you back to your center?",
+                        "Recall a time you bounced back stronger than before—how can that strength guide you today?",
+                        "If you believed the best was yet to come, what bold step would you take right now?"
+                    ],
+                    [
+                        "What responsibility do you feel to care for the spaces you inhabit—inside your mind, in your home, and in the wider world—and what's one small act you could take today to honor that responsibility?",
+                        "Where do you instinctively seek refuge when life feels overwhelming—and how might you cultivate that sense of safety and peace within yourself, no matter where you are?",
+                        "What part of your inner or outer environment feels depleted or worn—and what simple ritual or change could you introduce now to begin its renewal?",
+                        "In what ways could you bring more balance between your inner landscape and the natural world—what is one step toward creating that flow of give-and-take in your life?"
+                    ],
+                    [
+                        "What would it feel like if you could rise above your daily worries and glimpse something greater—where would you look, and what would you hope to discover?",
+                        "Where in your life do you already sense the divine or the profound, and how might you honor that spark more fully in your everyday moments?",
+                        "Imagine your actions, values, and spirit flowing in perfect harmony—what's the one shift you could make today to bring yourself closer to that alignment?",
+                        "What simple, intentional act could you introduce into your day to call you back to presence, purpose, and prayer?"
+                    ]
                 ];
                 
                 this.animatedItems = [];
@@ -406,12 +532,9 @@
                 const isMobile = window.innerWidth <= 768;
                 const canvas = this.game.canvas;
                 
-                // const startY = isMobile ? 320 : 450;
-                // const spacing = isMobile ? 70 : 80;
-                // const rectHeight = isMobile ? 55 : 50;
                 const startY = isMobile ? 380 : 500;
-const spacing = isMobile ? 80 : 90;
-const rectHeight = isMobile ? 60 : 60;
+                const spacing = isMobile ? 80 : 90;
+                const rectHeight = isMobile ? 60 : 60;
                 const rectWidth = isMobile ? 350 : 400;
                 
                 for (let i = 0; i < options.length; i++) {
@@ -421,7 +544,8 @@ const rectHeight = isMobile ? 60 : 60;
                         y: y - rectHeight/2,
                         width: rectWidth,
                         height: rectHeight,
-                        text: options[i]
+                        text: options[i],
+                        index: i
                     });
                 }
                 
@@ -456,22 +580,17 @@ const rectHeight = isMobile ? 60 : 60;
                 return imageTypes[pillarIndex] || 'heart';
             }
             
-            // New method to draw PNG images instead of pixel art
             drawPNGImage(ctx, imageType, x, y, size) {
                 const image = this.game.imageManager.getImage(imageType);
                 if (image) {
-                    // Calculate position to center the image
                     const drawX = x - size / 2;
                     const drawY = y - size / 2;
                     
                     ctx.save();
-ctx.globalAlpha = 1.0;
-                    // Draw the image scaled to the desired size
+                    ctx.globalAlpha = 1.0;
                     ctx.drawImage(image, drawX, drawY, size, size);
-
                     ctx.restore();
                 } else {
-                    // Fallback: draw a colored circle if image not available
                     ctx.save();
                     ctx.fillStyle = this.getFallbackColor(imageType);
                     ctx.beginPath();
@@ -521,7 +640,7 @@ ctx.globalAlpha = 1.0;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
                 const titleSize = isMobile ? 70 : 80;
-                const instructionSize = isMobile ? 40 : 50;
+                const questionSize = isMobile ? 32 : 40;
                 const optionSize = isMobile ? 36 : 45;
                 
                 ctx.fillStyle = 'black';
@@ -529,21 +648,25 @@ ctx.globalAlpha = 1.0;
                 ctx.textAlign = 'center';
                 ctx.fillText(this.pillarTitles[this.currentPillar], canvas.width / 2, isMobile ? 100 : 200);
                 
-                ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 180 : 350;
+                // Draw the pillar question
+                ctx.font = `${questionSize}px Arial`;
+                const question = this.pillarQuestions[this.currentPillar];
+                const words = question.split(' ');
+                const maxWordsPerLine = isMobile ? 8 : 12;
+                const lines = [];
                 
-                const instruction = this.pillarTexts[this.currentPillar];
-                if (isMobile && instruction.length > 25) {
-                    const words = instruction.split(' ');
-                    const mid = Math.ceil(words.length / 2);
-                    const line1 = words.slice(0, mid).join(' ');
-                    const line2 = words.slice(mid).join(' ');
-                    ctx.fillText(line1, canvas.width / 2, instructionY);
-                    ctx.fillText(line2, canvas.width / 2, instructionY + 40);
-                } else {
-                    ctx.fillText(instruction, canvas.width / 2, instructionY);
+                for (let i = 0; i < words.length; i += maxWordsPerLine) {
+                    lines.push(words.slice(i, i + maxWordsPerLine).join(' '));
                 }
                 
+                const questionStartY = isMobile ? 160 : 280;
+                const questionLineHeight = isMobile ? 40 : 50;
+                
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, canvas.width / 2, questionStartY + index * questionLineHeight);
+                });
+                
+                // Draw options
                 ctx.font = `${optionSize}px Arial`;
                 const options = this.pillarOptions[this.currentPillar];
 
@@ -561,22 +684,19 @@ ctx.globalAlpha = 1.0;
                     
                     // Draw text centered in button
                     ctx.fillStyle = 'black';
-                   // ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2 + 8);
-                   ctx.textAlign = 'center';
-ctx.textBaseline = 'middle';
-ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
                 }
                 
-                // Draw PNG images instead of pixel art
+                // Draw collected items
                 for (let anim of this.animatedItems) {
                     const size = (isMobile ? 80 : 120) * anim.currentScale;
                     const itemY = isMobile ? 900 : anim.y;
-                    //const itemX = isMobile ? 50 + (this.animatedItems.indexOf(anim) * 60) : anim.x;
-                    // const itemX = canvas.width / 2; // Center horizontally
                     const spacing = isMobile ? 80 : 120;
                     const totalWidth = (this.animatedItems.length - 1) * spacing;
                     const startX = (canvas.width - totalWidth) / 2;
-                    const itemX = startX + (this.animatedItems.indexOf(anim) * spacing)
+                    const itemX = startX + (this.animatedItems.indexOf(anim) * spacing);
                     
                     this.drawPNGImage(ctx, anim.imageType, itemX, itemY, size);
                 }
@@ -584,7 +704,13 @@ ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
                 if (isMobile) {
                     ctx.fillStyle = 'black';
                     ctx.font = '28px Arial';
-                    ctx.fillText(`${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`, canvas.width - 100, 50);
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`, canvas.width - 50, 50);
+                } else {
+                    ctx.fillStyle = 'black';
+                    ctx.font = '35px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`, canvas.width - 100, 80);
                 }
             }
             
@@ -598,19 +724,24 @@ ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
                         
                         console.log('Selected option:', rect.text);
                         
+                        // Get the reflection message for this option
+                        const reflectionMessage = this.pillarReflections[this.currentPillar][rect.index];
+                        
+                        // Update pillar and load texture
                         this.currentPillar++;
                         this.loadItemTexture();
                         
+                        // Create next scene
+                        let nextScene;
                         if (this.currentPillar >= this.TOTAL_PILLARS) {
-                            if (!this.journeyFinished) {
-                                console.log('Journey complete');
-                                this.game.changeScene('END', new Scene_End(this.game));
-                                this.journeyFinished = true;
-                                return;
-                            }
+                            nextScene = new Scene_End(this.game);
+                            this.journeyFinished = true;
                         } else {
-                            this.updateTexts();
+                            nextScene = new Scene_Game(this.game);
                         }
+                        
+                        // Show reflection scene
+                        this.game.changeScene('REFLECTION', new Scene_Reflection(this.game, reflectionMessage, nextScene));
                         break;
                     }
                 }
@@ -651,7 +782,7 @@ ctx.fillText(options[i], rect.x + rect.width/2, rect.y + rect.height/2);
                 const subtitleSize = isMobile ? 45 : 60;
                 const footerSize = isMobile ? 40 : 50;
                 const linkSize = isMobile ? 32 : 45;
-                const instructionSize = isMobile ? 28 : 30;
+                const instructionSize = isMobile ? 28: 30;
                 
                 ctx.fillStyle = 'black';
                 ctx.font = `bold ${titleSize}px Arial`;
