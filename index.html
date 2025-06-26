@@ -449,7 +449,7 @@
                 });
 
                 // Draw the reflection image below the text
-                const imageY = startY + (lines.length * lineHeight) + (isMobile ? 80 : 180);
+                const imageY = startY + (lines.length * lineHeight) + (isMobile ? 120 : 180);
                 const imageSize = isMobile ? 175 : 300;
                 this.drawPNGImage(ctx, this.reflectionImageType, canvas.width / 2, imageY, imageSize);
 
@@ -926,7 +926,7 @@
 
 
                 ctx.font = `${linkSize}px Arial`;
-                const linkY = isMobile ? 750 : 850;
+                const linkY = isMobile ? 800 : 850;
                 // First clickable link - fundamentally-me
                 ctx.fillStyle = '#0066cc'; // Blue color for link
                 ctx.font = `bold ${linkSize}px Arial`;
@@ -958,7 +958,7 @@
                 }
 
                 // Second clickable link - booking
-                const bookingY = isMobile ? 850 : 975;
+                const bookingY = isMobile ? 900 : 975;
                 ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
 
                 // Store the booking link area for click detection
