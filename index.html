@@ -926,7 +926,7 @@
 
 
                 ctx.font = `${linkSize}px Arial`;
-                const linkY = isMobile ? 850 : 850;
+                const linkY = isMobile ? 750 : 850;
                 // First clickable link - fundamentally-me
                 ctx.fillStyle = '#0066cc'; // Blue color for link
                 ctx.font = `bold ${linkSize}px Arial`;
@@ -971,7 +971,7 @@
 
                 ctx.fillStyle = 'black'; // Reset color
                 ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 900 : 1050;
+                const instructionY = isMobile ? 975 : 1050;
                 if (isMobile) {
                     ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
                 } else {
