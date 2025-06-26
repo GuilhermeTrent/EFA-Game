@@ -872,7 +872,7 @@
                 ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 100 : 120);
 
                 ctx.font = `${subtitleSize}px Arial`;
-                const subtitleY = isMobile ? 210 : 230;
+                const subtitleY = isMobile ? 180 : 230;
                 if (isMobile) {
                     ctx.fillText('You have discovered', canvas.width / 2, subtitleY);
                     ctx.fillText('all 7 Pillars of Self!', canvas.width / 2, subtitleY + 50);
@@ -886,7 +886,7 @@
                 ];
 
                 const centerX = canvas.width / 2;
-                const centerY = isMobile ? 400 : 515;
+                const centerY = isMobile ? 450 : 515;
                 const radius = isMobile ? 120 : 180;
                 const iconSize = isMobile ? 60 : 80;
 
@@ -926,7 +926,7 @@
 
 
                 ctx.font = `${linkSize}px Arial`;
-                const linkY = isMobile ? 650 : 850;
+                const linkY = isMobile ? 850 : 850;
                 // First clickable link - fundamentally-me
                 ctx.fillStyle = '#0066cc'; // Blue color for link
                 ctx.font = `bold ${linkSize}px Arial`;
@@ -958,7 +958,7 @@
                 }
 
                 // Second clickable link - booking
-                const bookingY = isMobile ? 750 : 975;
+                const bookingY = isMobile ? 850 : 975;
                 ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
 
                 // Store the booking link area for click detection
