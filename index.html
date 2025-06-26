@@ -450,7 +450,7 @@
 
                 // Draw the reflection image below the text
                 const imageY = startY + (lines.length * lineHeight) + (isMobile ? 80 : 180);
-                const imageSize = isMobile ? 150 : 300;
+                const imageSize = isMobile ? 175 : 300;
                 this.drawPNGImage(ctx, this.reflectionImageType, canvas.width / 2, imageY, imageSize);
 
                 // Instructions
@@ -869,10 +869,10 @@
                 ctx.fillStyle = 'black';
                 ctx.font = `bold ${titleSize}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 150 : 120);
+                ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 120 : 120);
 
                 ctx.font = `${subtitleSize}px Arial`;
-                const subtitleY = isMobile ? 220 : 230;
+                const subtitleY = isMobile ? 230 : 230;
                 if (isMobile) {
                     ctx.fillText('You have discovered', canvas.width / 2, subtitleY);
                     ctx.fillText('all 7 Pillars of Self!', canvas.width / 2, subtitleY + 50);
@@ -915,7 +915,7 @@
                 }
 
                 ctx.font = `${footerSize}px Arial`;
-                const footerY = isMobile ? 350 : 775;
+                const footerY = isMobile ? 500 : 775;
                 if (isMobile) {
                     ctx.fillText('Keep growing with', canvas.width / 2, footerY);
                     ctx.fillText('Emotional Fitness Academy', canvas.width / 2, footerY + 50);
@@ -926,7 +926,7 @@
 
 
                 ctx.font = `${linkSize}px Arial`;
-                const linkY = isMobile ? 480 : 850;
+                const linkY = isMobile ? 550 : 850;
                 // First clickable link - fundamentally-me
                 ctx.fillStyle = '#0066cc'; // Blue color for link
                 ctx.font = `bold ${linkSize}px Arial`;
@@ -958,7 +958,7 @@
                 }
 
                 // Second clickable link - booking
-                const bookingY = isMobile ? 620 : 975;
+                const bookingY = isMobile ? 700 : 975;
                 ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
 
                 // Store the booking link area for click detection
@@ -971,7 +971,7 @@
 
                 ctx.fillStyle = 'black'; // Reset color
                 ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 700 : 1050;
+                const instructionY = isMobile ? 850 : 1050;
                 if (isMobile) {
                     ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
                 } else {
