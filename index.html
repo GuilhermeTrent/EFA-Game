@@ -449,7 +449,7 @@
                 });
 
                 // Draw the reflection image below the text
-                const imageY = startY + (lines.length * lineHeight) + (isMobile ? 80 : 100);
+                const imageY = startY + (lines.length * lineHeight) + (isMobile ? 80 : 180);
                 const imageSize = isMobile ? 150 : 300;
                 this.drawPNGImage(ctx, this.reflectionImageType, canvas.width / 2, imageY, imageSize);
 
@@ -789,9 +789,9 @@
                             this.loadItemTexture();
 
                             if (currentPillarIndex + 1 >= this.TOTAL_PILLARS) {
-                                this.game.changeScene('END', new Scene_End(this.game));
+                                this.game.changeScene('END', new Scene_End(this.game, this.game.imageManager));
                             } else {
-                                this.game.changeScene('PLAY', new Scene_Game(this.game, currentPillarIndex + 1, this.animatedItems));
+                                this.game.changeScene('PLAY', new Scene_Game(this.game, this.imageManager, currentPillarIndex + 1, this.animatedItems));
                             }
                         });
 
@@ -827,11 +827,22 @@
 
         // End Scene
         class Scene_End extends Scene {
-            constructor(gameEngine) {
+            constructor(gameEngine, imageManager) {
                 super(gameEngine);
                 this.registerActions();
                 this.bookingLinkArea = null;
                 this.fundamentallyMeLinkArea = null;
+                this.imageManager = imageManager;
+
+                this.iconKeys = [
+                    'heart2',        
+                    'trophy',       
+                    'money',        
+                    'ring',         
+                    'brain',        
+                    'plant',        
+                    'spiritual' 
+                ];
             }
 
             registerActions() {
@@ -858,10 +869,10 @@
                 ctx.fillStyle = 'black';
                 ctx.font = `bold ${titleSize}px Arial`;
                 ctx.textAlign = 'center';
-                ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 150 : 250);
+                ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 150 : 120);
 
                 ctx.font = `${subtitleSize}px Arial`;
-                const subtitleY = isMobile ? 220 : 400;
+                const subtitleY = isMobile ? 220 : 230;
                 if (isMobile) {
                     ctx.fillText('You have discovered', canvas.width / 2, subtitleY);
                     ctx.fillText('all 7 Pillars of Self!', canvas.width / 2, subtitleY + 50);
@@ -869,8 +880,42 @@
                     ctx.fillText('You have discovered all 7 Pillars of Self!', canvas.width / 2, subtitleY);
                 }
 
+                 // Draw icons in a circle
+                const iconKeys = [
+                    'heart2', 'trophy', 'money', 'ring', 'brain', 'plant', 'spiritual'
+                ];
+
+                const centerX = canvas.width / 2;
+                const centerY = isMobile ? 400 : 515;
+                const radius = isMobile ? 120 : 180;
+                const iconSize = isMobile ? 60 : 80;
+
+                for (let i = 0; i < iconKeys.length; i++){
+                    const angle = (i / iconKeys.length) * 2 * Math.PI;
+                    const x = centerX + radius * Math.cos(angle);
+                    const y = centerY + radius * Math.sin(angle);
+
+                    const img = this.imageManager.getImage(iconKeys[i]);
+                    console.log(`Drawing icon: ${iconKeys[i]}`, img);
+                    if(img){
+                        ctx.drawImage(img, x - iconSize / 2, y - iconSize / 2, iconSize, iconSize);
+                    }
+                }
+
+                const centralIcon = this.imageManager.getImage('meditate');
+                const centralSize = isMobile ? 80 : 100;
+                if(centralIcon){
+                    ctx.drawImage(
+                        centralIcon,
+                        centerX - centralSize / 2,
+                        centerY - centralSize / 2,
+                        centralSize,
+                        centralSize
+                    );
+                }
+
                 ctx.font = `${footerSize}px Arial`;
-                const footerY = isMobile ? 350 : 600;
+                const footerY = isMobile ? 350 : 775;
                 if (isMobile) {
                     ctx.fillText('Keep growing with', canvas.width / 2, footerY);
                     ctx.fillText('Emotional Fitness Academy', canvas.width / 2, footerY + 50);
@@ -881,7 +926,7 @@
 
 
                 ctx.font = `${linkSize}px Arial`;
-                const linkY = isMobile ? 480 : 750;
+                const linkY = isMobile ? 480 : 850;
                 // First clickable link - fundamentally-me
                 ctx.fillStyle = '#0066cc'; // Blue color for link
                 ctx.font = `bold ${linkSize}px Arial`;
@@ -913,7 +958,7 @@
                 }
 
                 // Second clickable link - booking
-                const bookingY = isMobile ? 620 : 870;
+                const bookingY = isMobile ? 620 : 975;
                 ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
 
                 // Store the booking link area for click detection
@@ -926,7 +971,7 @@
 
                 ctx.fillStyle = 'black'; // Reset color
                 ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 700 : 950;
+                const instructionY = isMobile ? 700 : 1050;
                 if (isMobile) {
                     ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
                 } else {
