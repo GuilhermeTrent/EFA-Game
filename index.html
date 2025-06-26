@@ -114,13 +114,13 @@
 
             getFallbackColor(imageName) {
                 const colors = {
-                    'heart': '#FF0000',
+                    'heart2': '#FF0000',
                     'trophy': '#FFD700',
                     'money': '#00AA00',
                     'plant': '#228B22',
                     'brain': '#FF8C00',
                     'ring': '#FFD700',
-                    'flame': '#FF4500'
+                    'spiritual': '#FF4500'
                 };
                 return colors[imageName] || '#888888';
             }
@@ -138,6 +138,9 @@
                     'brain': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/mental.png',
                     'ring': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/arm.png',
                     'flame': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/spiritual.png',
+                    'heart2': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/main/assets/textures/heart2.png',
+                    'meditate': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/main/assets/textures/meditate.png',
+                    'spiritual': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/textures/spiritual.png',
 
                     // New reflection images
                     'emotional-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Emotional%20.png',
@@ -279,9 +282,10 @@
 
         // Menu Scene
         class Scene_Menu extends Scene {
-            constructor(gameEngine) {
+            constructor(gameEngine, imageManager) {
                 super(gameEngine);
                 this.registerActions();
+                this.imageManager = imageManager;
             }
 
             registerActions() {
@@ -334,7 +338,7 @@
             handleAction(command) {
                 if (command.getType() === 'START') {
                     if (command.getName() === 'PLAY') {
-                        this.game.changeScene('PLAY', new Scene_Game(this.game, 0));
+                        this.game.changeScene('PLAY', new Scene_Game(this.game, this.imageManager, 0));
                     } else if (command.getName() === 'QUIT') {
                         this.onEnd();
                     }
@@ -342,7 +346,7 @@
             }
 
             handleClick(x, y) {
-                this.game.changeScene('PLAY', new Scene_Game(this.game, 0));
+                this.game.changeScene('PLAY', new Scene_Game(this.game, this.imageManager, 0));
             }
 
             onEnd() {
@@ -396,13 +400,13 @@
 
             getFallbackColor(imageType) {
                 const colors = {
-                    'heart': '#FF0000',
+                    'heart2': '#FF0000',
                     'trophy': '#FFD700',
                     'money': '#00AA00',
                     'plant': '#228B22',
                     'brain': '#FF8C00',
                     'ring': '#FFD700',
-                    'flame': '#FF4500'
+                    'spiritual': '#FF4500'
                 };
                 return colors[imageType] || '#888888';
             }
@@ -446,7 +450,7 @@
 
                 // Draw the reflection image below the text
                 const imageY = startY + (lines.length * lineHeight) + (isMobile ? 80 : 100);
-                const imageSize = isMobile ? 120 : 150;
+                const imageSize = isMobile ? 150 : 300;
                 this.drawPNGImage(ctx, this.reflectionImageType, canvas.width / 2, imageY, imageSize);
 
                 // Instructions
@@ -477,7 +481,7 @@
 
         // Game Scene
         class Scene_Game extends Scene {
-            constructor(gameEngine, pillarIndex = 0, previousItems = []) {
+            constructor(gameEngine, imageManager, pillarIndex = 0, previousItems = []) {
                 super(gameEngine);
                 this.currentPillar = pillarIndex;
                 this.TOTAL_PILLARS = 7;
@@ -485,6 +489,7 @@
                 this.clickLocked = false;
                 this.state = 'ShowOptions';
                 this.hasStarted = false;
+                this.imageManager = imageManager;
 
 
                 this.pillarTitles = [
@@ -621,15 +626,15 @@
 
             getPillarImageType(pillarIndex) {
                 const imageTypes = [
-                    'heart',
+                    'heart2',
                     'trophy',
                     'money',
                     'ring',
                     'brain',
                     'plant',
-                    'flame'
+                    'spiritual'
                 ];
-                return imageTypes[pillarIndex] || 'heart';
+                return imageTypes[pillarIndex] || 'heart2';
             }
 
             drawPNGImage(ctx, imageType, x, y, size) {
@@ -654,13 +659,13 @@
 
             getFallbackColor(imageType) {
                 const colors = {
-                    'heart': '#FF0000',
+                    'heart2': '#FF0000',
                     'trophy': '#FFD700',
                     'money': '#00AA00',
                     'plant': '#228B22',
                     'brain': '#FF8C00',
                     'ring': '#FFD700',
-                    'flame': '#FF4500'
+                    'spiritual': '#FF4500'
                 };
                 return colors[imageType] || '#888888';
             }
