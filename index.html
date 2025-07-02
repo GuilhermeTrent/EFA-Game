@@ -479,255 +479,349 @@
             }
         }
 
-        class Scene_Scale extends Scene {
-            constructor(gameEngine, pillarIndex, onContinueCallback) {
-                super(gameEngine);
-                this.pillarIndex = pillarIndex;
-                this.onContinueCallback = onContinueCallback;
-                this.registerActions();
+      class Scene_Scale extends Scene {
+    constructor(gameEngine, pillarIndex, onContinueCallback) {
+        super(gameEngine);
+        this.pillarIndex = pillarIndex;
+        this.onContinueCallback = onContinueCallback;
+        this.registerActions();
 
-                // Scale questions for each pillar
-                this.scaleQuestions = [
-                    // Emotional
-                    ["How emotionally fit am I?", "How financially fit am I?", "How physically fit am I?", "How mentally fit am I?"],
-                    // Purpose  
-                    ["How emotionally fit am I?", "How financially fit am I?", "How physically fit am I?", "How much PURPOSE do I have in my life?"],
-                    // Financial
-                    ["How emotionally fit am I?", "How financially fit am I?", "How physically fit am I?", "How mentally fit am I?"],
-                    // Physical
-                    ["How emotionally fit am I?", "How financially fit am I?", "How physically fit am I?", "How mentally fit am I?"],
-                    // Mental
-                    ["How emotionally fit am I?", "How financially fit am I?", "How physically fit am I?", "How mentally fit am I?"],
-                    // Environmental
-                    ["How emotionally fit am I?", "How environmentally fit am I?", "How physically fit am I?", "How mentally fit am I?"],
-                    // Spiritual
-                    ["How emotionally fit am I?", "How financially fit am I?", "How spiritually fit am I?", "How much PURPOSE do I have in my life?"]
-                ];
+        // Scale questions for each pillar - using the detailed questions from the document
+        this.scaleQuestions = [
+            // Emotional Pillar
+            [
+                "How well do you recognize, identify, and understand your emotions as they arise?",
+                "How effectively do you manage and regulate your emotions, especially intense or difficult ones?",
+                "How appropriately and effectively do you express your emotions to others?",
+                "How well do you understand, connect with, and respond to others' emotions?",
+                "How quickly and effectively do you bounce back from emotional setbacks and maintain emotional balance?"
+            ],
+            // Purpose Pillar
+            [
+                "How clear and defined is your sense of life purpose and personal mission?",
+                "How consistently do your daily actions and major life decisions align with your core values?",
+                "How engaged are you in pursuing goals that feel personally meaningful and fulfilling?",
+                "How well do you create positive impact and contribute to something beyond yourself?",
+                "How effectively do you extract purpose and meaning from both positive and challenging life experiences?"
+            ],
+            // Financial Pillar
+            [
+                "How well do you manage anxiety, worry, and stress related to money and financial matters?",
+                "How positive and healthy is your relationship with money and your beliefs about financial abundance?",
+                "How confident and clear-headed are you when making important financial decisions?",
+                "How well do you control emotional spending and maintain healthy financial boundaries?",
+                "How emotionally secure and peaceful do you feel about your financial future and planning?"
+            ],
+            // Physical Pillar
+            [
+                "How comfortable and accepting are you of your physical body and appearance?",
+                "How well do you manage worry, fear, and anxiety related to physical health concerns?",
+                "How healthy is your emotional relationship with exercise, movement, and physical activity?",
+                "How well do you emotionally cope with physical discomfort, illness, or chronic conditions?",
+                "How effectively do you maintain emotional balance when dealing with physical fatigue or low energy?"
+            ],
+            // Mental Pillar
+            [
+                "How well do you recognize and redirect negative, repetitive, or destructive thought patterns?",
+                "How effectively do you manage emotional responses to mental pressure, information overload, or cognitive demands?",
+                "How well do you maintain emotional balance when experiencing mental fog, distraction, or cognitive difficulties?",
+                "How kind, supportive, and constructive is your internal mental dialogue and self-talk?",
+                "How well do you recognize your mental health needs and take proactive steps to maintain psychological well-being?"
+            ],
+            // Environmental Pillar
+            [
+                "How well do you adapt emotionally when your physical or social environment changes unexpectedly?",
+                "How effectively do you manage your emotional responses when in high-stress, toxic, or overwhelming environments?",
+                "How well do you create and maintain healthy emotional boundaries between yourself and negative environmental influences?",
+                "How proactively do you design and cultivate environments that support your emotional well-being?",
+                "How aware are you of how different environments affect your emotional state, and how well do you use this awareness to make healthy choices?"
+            ],
+            // Spiritual Pillar
+            [
+                "How connected do you feel to something greater than yourself (God, universe, nature, humanity, divine energy)?",
+                "How regularly do you engage in spiritual practices that nurture your soul and deepen your connection?",
+                "How often do you experience a sense of the sacred, wonder, or reverence in daily life?",
+                "How strong is your faith or trust in life's unfolding, even during uncertain or difficult times?",
+                "How well do you recognize, embrace, and integrate transcendent or mystical experiences into your daily life?"
+            ]
+        ];
 
-                // Input values - present and target scores
-                this.presentScores = [0, 0, 0, 0];
-                this.targetScores = [0, 0, 0, 0];
-                this.activeInput = null; // {type: 'present'|'target', index: number}
-                this.inputBoxes = [];
-                this.setupInputBoxes();
+        // Input values - present and target scores (changed to 5 questions)
+        this.presentScores = [0, 0, 0, 0, 0];
+        this.targetScores = [0, 0, 0, 0, 0];
+        this.activeInput = null; // {type: 'present'|'target', index: number}
+        this.inputBoxes = [];
+        this.setupInputBoxes();
+    }
+
+    setupInputBoxes() {
+        const isMobile = window.innerWidth <= 768;
+        const canvas = this.game.canvas;
+        const startY = isMobile ? 300 : 400;
+        const rowHeight = isMobile ? 80 : 90; // Increased for better spacing with longer questions
+        const boxWidth = isMobile ? 60 : 80;
+        const boxHeight = isMobile ? 40 : 50;
+
+        // Present score column X position
+        const presentX = canvas.width / 2 - (isMobile ? 80 : 100);
+        // Target score column X position  
+        const targetX = canvas.width / 2 + (isMobile ? 100 : 120);
+
+        this.inputBoxes = [];
+
+        for (let i = 0; i < 5; i++) { // Changed to 5 questions
+            const y = startY + (i * rowHeight);
+
+            // Present score input box
+            this.inputBoxes.push({
+                type: 'present',
+                index: i,
+                x: presentX,
+                y: y,
+                width: boxWidth,
+                height: boxHeight
+            });
+
+            // Target score input box
+            this.inputBoxes.push({
+                type: 'target',
+                index: i,
+                x: targetX,
+                y: y,
+                width: boxWidth,
+                height: boxHeight
+            });
+        }
+    }
+
+    registerActions() {
+        this.registerAction('Enter', 'CONTINUE');
+        this.registerAction('Escape', 'MENU');
+    }
+
+    update(dt) {
+        this.entityManager.update();
+    }
+
+    // Validation function to check if all fields are filled
+    validateAllFieldsFilled() {
+        for (let i = 0; i < 5; i++) {
+            if (this.presentScores[i] === 0 || this.targetScores[i] === 0) {
+                return false;
             }
+        }
+        return true;
+    }
 
-            setupInputBoxes() {
-                const isMobile = window.innerWidth <= 768;
-                const canvas = this.game.canvas;
-                const startY = isMobile ? 300 : 400;
-                const rowHeight = isMobile ? 60 : 70;
-                const boxWidth = isMobile ? 60 : 80;
-                const boxHeight = isMobile ? 40 : 50;
+    // Helper function to wrap text
+    wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+        let lines = [];
 
-                // Present score column X position
-                const presentX = canvas.width / 2 - (isMobile ? 80 : 100); // Was -120/-150
-                // Target score column X position  
-                const targetX = canvas.width / 2 + (isMobile ? 100 : 120); // Was 60/70
-
-                this.inputBoxes = [];
-
-                for (let i = 0; i < 4; i++) {
-                    const y = startY + (i * rowHeight);
-
-                    // Present score input box
-                    this.inputBoxes.push({
-                        type: 'present',
-                        index: i,
-                        x: presentX,
-                        y: y,
-                        width: boxWidth,
-                        height: boxHeight
-                    });
-
-                    // Target score input box
-                    this.inputBoxes.push({
-                        type: 'target',
-                        index: i,
-                        x: targetX,
-                        y: y,
-                        width: boxWidth,
-                        height: boxHeight
-                    });
-                }
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                lines.push(line);
+                line = words[n] + ' ';
+            } else {
+                line = testLine;
             }
+        }
+        lines.push(line);
 
-            registerActions() {
-                this.registerAction('Enter', 'CONTINUE');
-                this.registerAction('Escape', 'MENU');
-            }
+        for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], x, y + (i * lineHeight));
+        }
+        return lines.length * lineHeight;
+    }
 
-            update(dt) {
-                this.entityManager.update();
-            }
+    render(ctx) {
+        const canvas = ctx.canvas;
+        const isMobile = window.innerWidth <= 768;
 
-            render(ctx) {
-                const canvas = ctx.canvas;
-                const isMobile = window.innerWidth <= 768;
+        // Background
+        ctx.fillStyle = '#f5f5f5';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Background
-                ctx.fillStyle = '#f5f5f5';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const titleSize = isMobile ? 40 : 50; // Slightly smaller to fit more content
+        const questionSize = isMobile ? 20 : 24; // Smaller for longer questions
+        const headerSize = isMobile ? 28 : 32;
+        const instructionSize = isMobile ? 20 : 24;
 
-                const titleSize = isMobile ? 50 : 60;
-                const questionSize = isMobile ? 28 : 32;
-                const headerSize = isMobile ? 32 : 36;
-                const instructionSize = isMobile ? 24 : 28;
+        // Title
+        ctx.fillStyle = '#2c3e50';
+        ctx.font = `bold ${titleSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Self-Assessment Scale', canvas.width / 2, isMobile ? 60 : 80);
 
-                // Title
-                ctx.fillStyle = '#2c3e50';
-                ctx.font = `bold ${titleSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('Self-Assessment Scale', canvas.width / 2, isMobile ? 80 : 120);
+        // Column headers
+        ctx.font = `bold ${headerSize}px Arial`;
+        ctx.fillStyle = '#34495e';
 
-                // Column headers
-                ctx.font = `bold ${headerSize}px Arial`;
-                ctx.fillStyle = '#34495e';
+        const headerY = isMobile ? 180 : 220;
+        const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 200);
+        const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 200);
 
-                const headerY = isMobile ? 240 : 280;
-                // In render() method, change these lines:
-const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 200); // Increased from 120/150
-const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 200); 
+        ctx.textAlign = 'center';
+        ctx.fillText('Present Score', presentHeaderX, headerY);
+        ctx.fillText('Target Score', targetHeaderX, headerY);
 
-                ctx.textAlign = 'center';
-                ctx.fillText('Present Score', presentHeaderX, headerY);
-                ctx.fillText('Target Score', targetHeaderX, headerY);
+        // Scale instruction
+        ctx.font = `${instructionSize}px Arial`;
+        ctx.fillStyle = '#7f8c8d';
+        ctx.fillText('Scale 0 - 20', canvas.width / 2, headerY + 30);
 
-                // Scale instruction
-                ctx.font = `${instructionSize}px Arial`;
-                ctx.fillStyle = '#7f8c8d';
-                ctx.fillText('Scale 0 - 20', canvas.width / 2, headerY + 40);
+        // Questions and input boxes
+        ctx.font = `${questionSize}px Arial`;
+        ctx.fillStyle = '#2c3e50';
 
-                // Questions and input boxes
-                ctx.font = `${questionSize}px Arial`;
-                ctx.fillStyle = '#2c3e50';
+        const startY = isMobile ? 260 : 300;
+        const rowHeight = isMobile ? 80 : 90;
+        const questions = this.scaleQuestions[this.pillarIndex];
 
-                const startY = isMobile ? 340 : 420;
-                const rowHeight = isMobile ? 60 : 70;
-                const questions = this.scaleQuestions[this.pillarIndex];
+        for (let i = 0; i < 5; i++) { // Changed to 5 questions
+            const y = startY + (i * rowHeight);
 
-                for (let i = 0; i < 4; i++) {
-                    const y = startY + (i * rowHeight);
+            // Question number and text
+            ctx.textAlign = 'left';
+            const questionX = isMobile ? 20 : 50;
+            const questionMaxWidth = isMobile ? 300 : 400;
+            
+            // Use wrapText for longer questions
+            const lineHeight = isMobile ? 22 : 26;
+            this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
 
-                    // Question number and text
-                    ctx.textAlign = 'left';
-                    const questionX = isMobile ? 50 : 100;
-                    const questionMaxWidth = isMobile ? 280 : 350;
-                   ctx.fillText(`${i + 1}. ${questions[i]}`, questionX, y + 25, questionMaxWidth);
+            // Draw input boxes
+            for (let box of this.inputBoxes) {
+                if (box.index === i) {
+                    // Box background
+                    ctx.fillStyle = this.activeInput &&
+                        this.activeInput.type === box.type &&
+                        this.activeInput.index === box.index ? '#e3f2fd' : 'white';
+                    ctx.fillRect(box.x, box.y, box.width, box.height);
 
-                    // Draw input boxes
-                    for (let box of this.inputBoxes) {
-                        if (box.index === i) {
-                            // Box background
-                            ctx.fillStyle = this.activeInput &&
-                                this.activeInput.type === box.type &&
-                                this.activeInput.index === box.index ? '#e3f2fd' : 'white';
-                            ctx.fillRect(box.x, box.y, box.width, box.height);
+                    // Box border
+                    ctx.strokeStyle = this.activeInput &&
+                        this.activeInput.type === box.type &&
+                        this.activeInput.index === box.index ? '#2196f3' : '#ccc';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(box.x, box.y, box.width, box.height);
 
-                            // Box border
-                            ctx.strokeStyle = this.activeInput &&
-                                this.activeInput.type === box.type &&
-                                this.activeInput.index === box.index ? '#2196f3' : '#ccc';
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-                            // Value text
-                            ctx.fillStyle = '#2c3e50';
-                            ctx.textAlign = 'center';
-                            const value = box.type === 'present' ? this.presentScores[i] : this.targetScores[i];
-                            if (value > 0) {
-                                ctx.fillText(value.toString(), box.x + box.width / 2, box.y + box.height / 2 + 8);
-                            }
-                        }
-                    }
-                }
-
-                // Total scores
-                const totalY = startY + (4 * rowHeight) + 40;
-
-                // First draw "TOTAL SCORES" label ABOVE the numbers
-ctx.font = `${instructionSize}px Arial`;
-ctx.fillStyle = '#7f8c8d';
-ctx.textAlign = 'center';
-ctx.fillText('TOTAL SCORES', canvas.width / 2, totalY);
-
-                ctx.font = `bold ${headerSize}px Arial`;
-                ctx.fillStyle = '#2c3e50';
-                ctx.textAlign = 'center';
-
-                const presentTotal = this.presentScores.reduce((a, b) => a + b, 0);
-                const targetTotal = this.targetScores.reduce((a, b) => a + b, 0);
-
-                
-ctx.font = `bold ${headerSize}px Arial`;
-ctx.fillStyle = '#2c3e50';
-ctx.fillText(`${presentTotal}`, presentHeaderX, totalY + 40); // +40 to move below label
-ctx.fillText(`${targetTotal}`, targetHeaderX, totalY + 40);   // +40 to move below label
-
-                // ctx.font = `${instructionSize}px Arial`;
-                // ctx.fillText('TOTAL SCORES', canvas.width / 2, totalY);
-
-                // Notes instruction
-                const notesY = totalY + 80;
-                ctx.font = `${instructionSize}px Arial`;
-                ctx.fillStyle = '#7f8c8d';
-                ctx.textAlign = 'center';
-                ctx.fillText('Take some notes on your feelings and thoughts about these scores', canvas.width / 2, notesY);
-
-                // Continue instruction
-                const continueY = canvas.height - (isMobile ? 80 : 120);
-                ctx.fillText(isMobile ? 'Tap to continue' : 'Click anywhere or press Enter to continue', canvas.width / 2, continueY);
-            }
-
-            handleClick(x, y) {
-                // Check if click is on an input box
-                for (let box of this.inputBoxes) {
-                    if (x >= box.x && x <= box.x + box.width &&
-                        y >= box.y && y <= box.y + box.height) {
-                        this.activeInput = { type: box.type, index: box.index };
-                        this.showNumberInput(box);
-                        return;
-                    }
-                }
-
-                // Continue if click is elsewhere
-                this.continue();
-            }
-
-            showNumberInput(box) {
-                const currentValue = box.type === 'present' ?
-                    this.presentScores[box.index] : this.targetScores[box.index];
-
-                const input = prompt(`Enter a value from 0-20 for this question:`, currentValue || '');
-
-                if (input !== null) {
-                    const value = parseInt(input);
-                    if (!isNaN(value) && value >= 0 && value <= 20) {
-                        if (box.type === 'present') {
-                            this.presentScores[box.index] = value;
-                        } else {
-                            this.targetScores[box.index] = value;
-                        }
-                    }
-                }
-
-                this.activeInput = null;
-            }
-
-            continue() {
-                this.onContinueCallback();
-            }
-
-            handleAction(command) {
-                if (command.getType() === 'START') {
-                    if (command.getName() === 'CONTINUE') {
-                        this.continue();
-                    } else if (command.getName() === 'MENU') {
-                        this.game.changeScene('MENU', new Scene_Menu(this.game));
+                    // Value text
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.textAlign = 'center';
+                    const value = box.type === 'present' ? this.presentScores[i] : this.targetScores[i];
+                    if (value > 0) {
+                        ctx.fillText(value.toString(), box.x + box.width / 2, box.y + box.height / 2 + 8);
                     }
                 }
             }
         }
+
+        // Total scores
+        const totalY = startY + (5 * rowHeight) + 40; // Changed to 5 questions
+
+        // Draw "TOTAL SCORES" label ABOVE the numbers
+        ctx.font = `${instructionSize}px Arial`;
+        ctx.fillStyle = '#7f8c8d';
+        ctx.textAlign = 'center';
+        ctx.fillText('TOTAL SCORES', canvas.width / 2, totalY);
+
+        ctx.font = `bold ${headerSize}px Arial`;
+        ctx.fillStyle = '#2c3e50';
+        ctx.textAlign = 'center';
+
+        const presentTotal = this.presentScores.reduce((a, b) => a + b, 0);
+        const targetTotal = this.targetScores.reduce((a, b) => a + b, 0);
+
+        ctx.fillText(`${presentTotal}`, presentHeaderX, totalY + 40);
+        ctx.fillText(`${targetTotal}`, targetHeaderX, totalY + 40);
+
+        // Validation message if not all fields are filled
+        if (!this.validateAllFieldsFilled()) {
+            ctx.font = `bold ${instructionSize}px Arial`;
+            ctx.fillStyle = '#e74c3c'; // Red color for validation message
+            ctx.textAlign = 'center';
+            ctx.fillText('Please fill all fields before continuing', canvas.width / 2, totalY + 80);
+        }
+
+        // Notes instruction
+        const notesY = totalY + (this.validateAllFieldsFilled() ? 80 : 120);
+        ctx.font = `${instructionSize}px Arial`;
+        ctx.fillStyle = '#7f8c8d';
+        ctx.textAlign = 'center';
+        ctx.fillText('Take some notes on your feelings and thoughts about these scores', canvas.width / 2, notesY);
+
+        // Continue instruction
+        const continueY = canvas.height - (isMobile ? 60 : 80);
+        ctx.fillStyle = this.validateAllFieldsFilled() ? '#7f8c8d' : '#bdc3c7'; // Dimmed if validation fails
+        ctx.fillText(isMobile ? 'Tap to continue' : 'Click anywhere or press Enter to continue', canvas.width / 2, continueY);
+    }
+
+    handleClick(x, y) {
+        // Check if click is on an input box
+        for (let box of this.inputBoxes) {
+            if (x >= box.x && x <= box.x + box.width &&
+                y >= box.y && y <= box.y + box.height) {
+                this.activeInput = { type: box.type, index: box.index };
+                this.showNumberInput(box);
+                return;
+            }
+        }
+
+        // Only continue if all fields are filled
+        if (this.validateAllFieldsFilled()) {
+            this.continue();
+        } else {
+            // Show alert if trying to continue without filling all fields
+            alert('Please fill all present and target scores before continuing.');
+        }
+    }
+
+    showNumberInput(box) {
+        const currentValue = box.type === 'present' ?
+            this.presentScores[box.index] : this.targetScores[box.index];
+
+        const input = prompt(`Enter a value from 0-20 for this question:`, currentValue || '');
+
+        if (input !== null) {
+            const value = parseInt(input);
+            if (!isNaN(value) && value >= 0 && value <= 20) {
+                if (box.type === 'present') {
+                    this.presentScores[box.index] = value;
+                } else {
+                    this.targetScores[box.index] = value;
+                }
+            } else {
+                alert('Please enter a valid number between 0 and 20.');
+            }
+        }
+
+        this.activeInput = null;
+    }
+
+    continue() {
+        // Double-check validation before proceeding
+        if (this.validateAllFieldsFilled()) {
+            this.onContinueCallback();
+        } else {
+            alert('Please fill all present and target scores before continuing.');
+        }
+    }
+
+    handleAction(command) {
+        if (command.getType() === 'START') {
+            if (command.getName() === 'CONTINUE') {
+                this.continue();
+            } else if (command.getName() === 'MENU') {
+                this.game.changeScene('MENU', new Scene_Menu(this.game));
+            }
+        }
+    }
+}
 
         // Game Scene
         class Scene_Game extends Scene {
