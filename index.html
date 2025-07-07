@@ -1,559 +1,626 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>7 Pillars of Self</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
+      body {
+        background: #1a1a1a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+        touch-action: manipulation;
+      }
+
+      canvas {
+        border: 2px solid #333;
+        background: #549aa3;
+        cursor: pointer;
+        max-width: 100vw;
+        max-height: 100vh;
+        display: block;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .loading {
+        position: absolute;
+        color: white;
+        font-size: 24px;
+        z-index: 10;
+      }
+
+      @media (max-width: 768px) {
         body {
-            background: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-            touch-action: manipulation;
+          padding: 5px;
         }
 
         canvas {
-            border: 2px solid #333;
-            background: #549aa3;
-            cursor: pointer;
-            max-width: 100vw;
-            max-height: 100vh;
-            display: block;
-            touch-action: manipulation;
-            user-select: none;
-            -webkit-user-select: none;
+          border: 1px solid #333;
+          touch-action: pinch-zoom;
         }
 
         .loading {
-            position: absolute;
-            color: white;
-            font-size: 24px;
-            z-index: 10;
+          font-size: 18px;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
         }
+      }
 
-        @media (max-width: 768px) {
-            body {
-                padding: 5px;
-            }
-
-            canvas {
-                border: 1px solid #333;
-                touch-action: pinch-zoom;
-            }
-
-            .loading {
-                font-size: 18px;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-            }
-        }
-
-        @media (max-height: 600px) {
-            canvas {
-                height: 100vh !important;
-                width: auto !important;
-            }
-        }
-
+      @media (max-height: 600px) {
         canvas {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+          height: 100vh !important;
+          width: auto !important;
         }
-    </style>
-</head>
+      }
 
-<body>
+      canvas {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+
+  <body>
     <div class="loading" id="loading">Loading...</div>
     <canvas id="gameCanvas" width="1920" height="1080"></canvas>
-
+    <input id="hiddenInput" type="number" inputmode="numeric" min="0" max="20" style="position: absolute; opacity: 0; pointer-events: none;">
+  
     <script>
-        // Image Manager Class
-        class ImageManager {
-            constructor() {
-                this.images = new Map();
-                this.loadingPromises = [];
-            }
-
-            loadImage(name, src) {
-                return new Promise((resolve, reject) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        this.images.set(name, img);
-                        resolve(img);
-                    };
-                    img.onerror = () => {
-                        console.warn(`Failed to load image: ${src}. Using fallback.`);
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 64;
-                        canvas.height = 64;
-                        const ctx = canvas.getContext('2d');
-                        ctx.fillStyle = this.getFallbackColor(name);
-                        ctx.fillRect(0, 0, 64, 64);
-                        this.images.set(name, canvas);
-                        resolve(canvas);
-                    };
-                    img.src = src;
-                });
-            }
-
-            getFallbackColor(imageName) {
-                const colors = {
-                    'heart2': '#FF0000',
-                    'trophy': '#FFD700',
-                    'money': '#00AA00',
-                    'plant': '#228B22',
-                    'brain': '#FF8C00',
-                    'ring': '#FFD700',
-                    'spiritual': '#FF4500'
-                };
-                return colors[imageName] || '#888888';
-            }
-
-            getImage(name) {
-                return this.images.get(name);
-            }
-
-            async loadAllImages() {
-                const imagePaths = {
-                    'heart': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/heart.png',
-                    'trophy': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/purpose.png',
-                    'money': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/financial.png',
-                    'plant': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/earth.png',
-                    'brain': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/mental.png',
-                    'ring': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/arm.png',
-                    'flame': 'https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/spiritual.png',
-                    'heart2': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/main/assets/textures/heart2.png',
-                    'meditate': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/main/assets/textures/meditate.png',
-                    'spiritual': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/textures/spiritual.png',
-
-                    // New reflection images
-                    'emotional-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Emotional%20.png',
-                    'purpose-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Purpose.png',
-                    'financial-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/financial.png',
-                    'physical-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/physical.png',
-                    'mental-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Mental.png',
-                    'environmental-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/environmental.png',
-                    'spiritual-reflection': 'https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/spiritual.png',
-                };
-
-                for (const [name, path] of Object.entries(imagePaths)) {
-                    this.loadingPromises.push(this.loadImage(name, path));
-                }
-
-                try {
-                    await Promise.all(this.loadingPromises);
-                    console.log('All images loaded successfully');
-                } catch (error) {
-                    console.error('Error loading images:', error);
-                }
-            }
+      // Image Manager Class
+      class ImageManager {
+        constructor() {
+          this.images = new Map();
+          this.loadingPromises = [];
         }
 
-        // Entity Management System
-        class Entity {
-            constructor(id, tag) {
-                this.id = id;
-                this.tag = tag;
-                this.active = true;
-                this.components = new Map();
-            }
-
-            isActive() {
-                return this.active;
-            }
-
-            destroy() {
-                this.active = false;
-            }
-
-            getTag() {
-                return this.tag;
-            }
+        loadImage(name, src) {
+          return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+              this.images.set(name, img);
+              resolve(img);
+            };
+            img.onerror = () => {
+              console.warn(`Failed to load image: ${src}. Using fallback.`);
+              const canvas = document.createElement("canvas");
+              canvas.width = 64;
+              canvas.height = 64;
+              const ctx = canvas.getContext("2d");
+              ctx.fillStyle = this.getFallbackColor(name);
+              ctx.fillRect(0, 0, 64, 64);
+              this.images.set(name, canvas);
+              resolve(canvas);
+            };
+            img.src = src;
+          });
         }
 
-        class EntityManager {
-            constructor() {
-                this.entities = [];
-                this.entityMap = new Map();
-                this.totalEntities = 0;
-                this.entitiesToAdd = [];
-            }
-
-            addEntity(tag) {
-                const entity = new Entity(this.totalEntities++, tag);
-                this.entitiesToAdd.push(entity);
-                return entity;
-            }
-
-            getEntities(tag = null) {
-                if (tag === null) {
-                    return this.entities;
-                }
-                return this.entityMap.get(tag) || [];
-            }
-
-            update() {
-                this.removeDeadEntities(this.entities);
-                for (let [tag, entityVec] of this.entityMap) {
-                    this.removeDeadEntities(entityVec);
-                }
-
-                for (let entity of this.entitiesToAdd) {
-                    this.entities.push(entity);
-                    if (!this.entityMap.has(entity.getTag())) {
-                        this.entityMap.set(entity.getTag(), []);
-                    }
-                    this.entityMap.get(entity.getTag()).push(entity);
-                }
-                this.entitiesToAdd = [];
-            }
-
-            removeDeadEntities(entityVec) {
-                for (let i = entityVec.length - 1; i >= 0; i--) {
-                    if (!entityVec[i].isActive()) {
-                        entityVec.splice(i, 1);
-                    }
-                }
-            }
+        getFallbackColor(imageName) {
+          const colors = {
+            heart2: "#FF0000",
+            trophy: "#FFD700",
+            money: "#00AA00",
+            plant: "#228B22",
+            brain: "#FF8C00",
+            ring: "#FFD700",
+            spiritual: "#FF4500",
+          };
+          return colors[imageName] || "#888888";
         }
 
-        // Command System
-        class Command {
-            constructor(name, type) {
-                this.name = name;
-                this.type = type;
-            }
-
-            getName() { return this.name; }
-            getType() { return this.type; }
+        getImage(name) {
+          return this.images.get(name);
         }
 
-        // Base Scene Class
-        class Scene {
-            constructor(gameEngine) {
-                this.game = gameEngine;
-                this.entityManager = new EntityManager();
-                this.commands = new Map();
-                this.isPaused = false;
-                this.hasEnded = false;
-                this.currentFrame = 0;
-            }
+        async loadAllImages() {
+          const imagePaths = {
+            heart:
+              "https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/heart.png",
+            trophy:
+              "https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/purpose.png",
+            money:
+              "https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/financial.png",
+            plant:
+              "https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/earth.png",
+            brain:
+              "https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/assets/textures/mental.png",
+            ring: "https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/arm.png",
+            flame:
+              "https://raw.githubusercontent.com/GuilhermeTrent/assets/refs/heads/main/Assets-Nicolas/spiritual.png",
+            heart2:
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/main/assets/textures/heart2.png",
+            meditate:
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/main/assets/textures/meditate.png",
+            spiritual:
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/textures/spiritual.png",
 
-            update(dt) {
-                // Override in subclasses
-            }
+            // New reflection images
+            "emotional-reflection":
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Emotional%20.png",
+            "purpose-reflection":
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Purpose.png",
+            "financial-reflection":
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/financial.png",
+            "physical-reflection":
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/physical.png",
+            "mental-reflection":
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/Mental.png",
+            "environmental-reflection":
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/environmental.png",
+            "spiritual-reflection":
+              "https://raw.githubusercontent.com/GuilhermeTrent/EFA-Game/refs/heads/main/assets/images/spiritual.png",
+          };
 
-            render(ctx) {
-                // Override in subclasses
-            }
+          for (const [name, path] of Object.entries(imagePaths)) {
+            this.loadingPromises.push(this.loadImage(name, path));
+          }
 
-            handleAction(command) {
-                // Override in subclasses
-            }
+          try {
+            await Promise.all(this.loadingPromises);
+            console.log("All images loaded successfully");
+          } catch (error) {
+            console.error("Error loading images:", error);
+          }
+        }
+      }
 
-            registerAction(key, action) {
-                this.commands.set(key, action);
-            }
-
-            getActionMap() {
-                return this.commands;
-            }
-
-            onEnd() {
-                // Override in subclasses
-            }
+      // Entity Management System
+      class Entity {
+        constructor(id, tag) {
+          this.id = id;
+          this.tag = tag;
+          this.active = true;
+          this.components = new Map();
         }
 
-        // Menu Scene
-        class Scene_Menu extends Scene {
-            constructor(gameEngine, imageManager) {
-                super(gameEngine);
-                this.registerActions();
-                this.imageManager = imageManager;
-            }
-
-            registerActions() {
-                this.registerAction('Enter', 'PLAY');
-                this.registerAction('Escape', 'QUIT');
-            }
-
-            update(dt) {
-                this.entityManager.update();
-            }
-
-            render(ctx) {
-                const canvas = ctx.canvas;
-                const isMobile = window.innerWidth <= 768;
-
-                ctx.fillStyle = '#549aa3';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                const titleSize = isMobile ? 80 : 100;
-                const subtitleSize = isMobile ? 45 : 60;
-                const buttonSize = isMobile ? 40 : 50;
-                const footerSize = isMobile ? 35 : 40;
-
-                ctx.fillStyle = 'black';
-                ctx.font = `bold ${titleSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('7   Pillars   of   Self', canvas.width / 2, isMobile ? 150 : 250);
-
-                ctx.font = `${subtitleSize}px Arial`;
-                const subtitleY = isMobile ? 220 : 400;
-                if (isMobile) {
-                    ctx.fillText('A Journey of Self-Discovery', canvas.width / 2, subtitleY);
-                    ctx.fillText('and Growth', canvas.width / 2, subtitleY + 50);
-                } else {
-                    ctx.fillText('A Journey of Self-Discovery and Growth', canvas.width / 2, subtitleY);
-                }
-
-                ctx.font = `${buttonSize}px Arial`;
-                const buttonY = isMobile ? 350 : 700;
-                if (isMobile) {
-                    ctx.fillText('Tap to Begin', canvas.width / 2, buttonY);
-                } else {
-                    ctx.fillText('Press Enter to Begin or Click Here', canvas.width / 2, buttonY);
-                }
-
-                ctx.font = `${footerSize}px Arial`;
-                ctx.fillText('Emotional Fitness Academy', canvas.width / 2, isMobile ? 500 : 1000);
-            }
-
-            handleAction(command) {
-                if (command.getType() === 'START') {
-                    if (command.getName() === 'PLAY') {
-                        this.game.changeScene('PLAY', new Scene_Game(this.game, this.imageManager, 0));
-                    } else if (command.getName() === 'QUIT') {
-                        this.onEnd();
-                    }
-                }
-            }
-
-            handleClick(x, y) {
-                this.game.changeScene('PLAY', new Scene_Game(this.game, this.imageManager, 0));
-            }
-
-            onEnd() {
-                console.log('Game ended');
-            }
+        isActive() {
+          return this.active;
         }
 
-        // Reflection Scene
-        class Scene_Reflection extends Scene {
-            constructor(gameEngine, message, reflectionImageType, onContinueCallback) {
-                super(gameEngine);
-                this.message = message;
-                this.reflectionImageType = reflectionImageType; // Changed from pillarImageType
-                this.onContinueCallback = onContinueCallback;
-                this.registerActions();
-            }
-
-            continue() {
-                this.onContinueCallback();
-            }
-
-            registerActions() {
-                this.registerAction('Enter', 'CONTINUE');
-                this.registerAction('Escape', 'MENU');
-            }
-
-            update(dt) {
-                this.entityManager.update();
-            }
-
-            // Add image drawing methods
-            drawPNGImage(ctx, imageType, x, y, size) {
-                const image = this.game.imageManager.getImage(imageType);
-                if (image) {
-                    const drawX = x - size / 2;
-                    const drawY = y - size / 2;
-
-                    ctx.save();
-                    ctx.globalAlpha = 1.0;
-                    ctx.drawImage(image, drawX, drawY, size, size);
-                    ctx.restore();
-                } else {
-                    ctx.save();
-                    ctx.fillStyle = this.getFallbackColor(imageType);
-                    ctx.beginPath();
-                    ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
-                    ctx.fill();
-                    ctx.restore();
-                }
-            }
-
-            getFallbackColor(imageType) {
-                const colors = {
-                    'heart2': '#FF0000',
-                    'trophy': '#FFD700',
-                    'money': '#00AA00',
-                    'plant': '#228B22',
-                    'brain': '#FF8C00',
-                    'ring': '#FFD700',
-                    'spiritual': '#FF4500'
-                };
-                return colors[imageType] || '#888888';
-            }
-
-            render(ctx) {
-                const canvas = ctx.canvas;
-                const isMobile = window.innerWidth <= 768;
-
-                // Soft background color for reflection
-                ctx.fillStyle = '#f0f8ff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                const titleSize = isMobile ? 50 : 60;
-                const messageSize = isMobile ? 32 : 40;
-                const instructionSize = isMobile ? 28 : 35;
-
-                ctx.fillStyle = '#2c3e50';
-                ctx.font = `bold ${titleSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('Reflection', canvas.width / 2, isMobile ? 100 : 150);
-
-                // Draw the reflection message
-                ctx.font = `${messageSize}px Arial`;
-                ctx.fillStyle = '#34495e';
-
-                // Break the message into multiple lines for better readability
-                const words = this.message.split(' ');
-                const maxWordsPerLine = isMobile ? 6 : 10;
-                const lines = [];
-
-                for (let i = 0; i < words.length; i += maxWordsPerLine) {
-                    lines.push(words.slice(i, i + maxWordsPerLine).join(' '));
-                }
-
-                const startY = isMobile ? 200 : 300;
-                const lineHeight = isMobile ? 45 : 55;
-
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, canvas.width / 2, startY + index * lineHeight);
-                });
-
-                // Draw the reflection image below the text
-                const imageY = startY + (lines.length * lineHeight) + (isMobile ? 120 : 180);
-                const imageSize = isMobile ? 175 : 300;
-                this.drawPNGImage(ctx, this.reflectionImageType, canvas.width / 2, imageY, imageSize);
-
-                // Instructions
-                ctx.font = `${instructionSize}px Arial`;
-                ctx.fillStyle = '#7f8c8d';
-                const instructionY = canvas.height - (isMobile ? 100 : 150);
-                if (isMobile) {
-                    ctx.fillText('Tap anywhere to continue', canvas.width / 2, instructionY);
-                } else {
-                    ctx.fillText('Click anywhere or press Enter to continue', canvas.width / 2, instructionY);
-                }
-            }
-
-            handleClick(x, y) {
-                this.continue();
-            }
-
-            handleAction(command) {
-                if (command.getType() === 'START') {
-                    if (command.getName() === 'CONTINUE') {
-                        this.continue();
-                    } else if (command.getName() === 'MENU') {
-                        this.game.changeScene('MENU', new Scene_Menu(this.game));
-                    }
-                }
-            }
+        destroy() {
+          this.active = false;
         }
+
+        getTag() {
+          return this.tag;
+        }
+      }
+
+      class EntityManager {
+        constructor() {
+          this.entities = [];
+          this.entityMap = new Map();
+          this.totalEntities = 0;
+          this.entitiesToAdd = [];
+        }
+
+        addEntity(tag) {
+          const entity = new Entity(this.totalEntities++, tag);
+          this.entitiesToAdd.push(entity);
+          return entity;
+        }
+
+        getEntities(tag = null) {
+          if (tag === null) {
+            return this.entities;
+          }
+          return this.entityMap.get(tag) || [];
+        }
+
+        update() {
+          this.removeDeadEntities(this.entities);
+          for (let [tag, entityVec] of this.entityMap) {
+            this.removeDeadEntities(entityVec);
+          }
+
+          for (let entity of this.entitiesToAdd) {
+            this.entities.push(entity);
+            if (!this.entityMap.has(entity.getTag())) {
+              this.entityMap.set(entity.getTag(), []);
+            }
+            this.entityMap.get(entity.getTag()).push(entity);
+          }
+          this.entitiesToAdd = [];
+        }
+
+        removeDeadEntities(entityVec) {
+          for (let i = entityVec.length - 1; i >= 0; i--) {
+            if (!entityVec[i].isActive()) {
+              entityVec.splice(i, 1);
+            }
+          }
+        }
+      }
+
+      // Command System
+      class Command {
+        constructor(name, type) {
+          this.name = name;
+          this.type = type;
+        }
+
+        getName() {
+          return this.name;
+        }
+        getType() {
+          return this.type;
+        }
+      }
+
+      // Base Scene Class
+      class Scene {
+        constructor(gameEngine) {
+          this.game = gameEngine;
+          this.entityManager = new EntityManager();
+          this.commands = new Map();
+          this.isPaused = false;
+          this.hasEnded = false;
+          this.currentFrame = 0;
+        }
+
+        update(dt) {
+          // Override in subclasses
+        }
+
+        render(ctx) {
+          // Override in subclasses
+        }
+
+        handleAction(command) {
+          // Override in subclasses
+        }
+
+        registerAction(key, action) {
+          this.commands.set(key, action);
+        }
+
+        getActionMap() {
+          return this.commands;
+        }
+
+        onEnd() {
+          // Override in subclasses
+        }
+      }
+
+      // Menu Scene
+      class Scene_Menu extends Scene {
+        constructor(gameEngine, imageManager) {
+          super(gameEngine);
+          this.registerActions();
+          this.imageManager = imageManager;
+        }
+
+        registerActions() {
+          this.registerAction("Enter", "PLAY");
+          this.registerAction("Escape", "QUIT");
+        }
+
+        update(dt) {
+          this.entityManager.update();
+        }
+
+        render(ctx) {
+          const canvas = ctx.canvas;
+          const isMobile = window.innerWidth <= 768;
+
+          ctx.fillStyle = "#549aa3";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const titleSize = isMobile ? 80 : 100;
+          const subtitleSize = isMobile ? 45 : 60;
+          const buttonSize = isMobile ? 40 : 50;
+          const footerSize = isMobile ? 35 : 40;
+
+          ctx.fillStyle = "black";
+          ctx.font = `bold ${titleSize}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText(
+            "7   Pillars   of   Self",
+            canvas.width / 2,
+            isMobile ? 150 : 250
+          );
+
+          ctx.font = `${subtitleSize}px Arial`;
+          const subtitleY = isMobile ? 220 : 400;
+          if (isMobile) {
+            ctx.fillText(
+              "A Journey of Self-Discovery",
+              canvas.width / 2,
+              subtitleY
+            );
+            ctx.fillText("and Growth", canvas.width / 2, subtitleY + 50);
+          } else {
+            ctx.fillText(
+              "A Journey of Self-Discovery and Growth",
+              canvas.width / 2,
+              subtitleY
+            );
+          }
+
+          ctx.font = `${buttonSize}px Arial`;
+          const buttonY = isMobile ? 350 : 700;
+          if (isMobile) {
+            ctx.fillText("Tap to Begin", canvas.width / 2, buttonY);
+          } else {
+            ctx.fillText(
+              "Press Enter to Begin or Click Here",
+              canvas.width / 2,
+              buttonY
+            );
+          }
+
+          ctx.font = `${footerSize}px Arial`;
+          ctx.fillText(
+            "Emotional Fitness Academy",
+            canvas.width / 2,
+            isMobile ? 500 : 1000
+          );
+        }
+
+        handleAction(command) {
+          if (command.getType() === "START") {
+            if (command.getName() === "PLAY") {
+              this.game.changeScene(
+                "PLAY",
+                new Scene_Game(this.game, this.imageManager, 0)
+              );
+            } else if (command.getName() === "QUIT") {
+              this.onEnd();
+            }
+          }
+        }
+
+        handleClick(x, y) {
+          this.game.changeScene(
+            "PLAY",
+            new Scene_Game(this.game, this.imageManager, 0)
+          );
+        }
+
+        onEnd() {
+          console.log("Game ended");
+        }
+      }
+
+      // Reflection Scene
+      class Scene_Reflection extends Scene {
+        constructor(
+          gameEngine,
+          message,
+          reflectionImageType,
+          onContinueCallback
+        ) {
+          super(gameEngine);
+          this.message = message;
+          this.reflectionImageType = reflectionImageType; // Changed from pillarImageType
+          this.onContinueCallback = onContinueCallback;
+          this.registerActions();
+        }
+
+        continue() {
+          this.onContinueCallback();
+        }
+
+        registerActions() {
+          this.registerAction("Enter", "CONTINUE");
+          this.registerAction("Escape", "MENU");
+        }
+
+        update(dt) {
+          this.entityManager.update();
+        }
+
+        // Add image drawing methods
+        drawPNGImage(ctx, imageType, x, y, size) {
+          const image = this.game.imageManager.getImage(imageType);
+          if (image) {
+            const drawX = x - size / 2;
+            const drawY = y - size / 2;
+
+            ctx.save();
+            ctx.globalAlpha = 1.0;
+            ctx.drawImage(image, drawX, drawY, size, size);
+            ctx.restore();
+          } else {
+            ctx.save();
+            ctx.fillStyle = this.getFallbackColor(imageType);
+            ctx.beginPath();
+            ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        getFallbackColor(imageType) {
+          const colors = {
+            heart2: "#FF0000",
+            trophy: "#FFD700",
+            money: "#00AA00",
+            plant: "#228B22",
+            brain: "#FF8C00",
+            ring: "#FFD700",
+            spiritual: "#FF4500",
+          };
+          return colors[imageType] || "#888888";
+        }
+
+        render(ctx) {
+          const canvas = ctx.canvas;
+          const isMobile = window.innerWidth <= 768;
+
+          // Soft background color for reflection
+          ctx.fillStyle = "#f0f8ff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const titleSize = isMobile ? 50 : 60;
+          const messageSize = isMobile ? 32 : 40;
+          const instructionSize = isMobile ? 28 : 35;
+
+          ctx.fillStyle = "#2c3e50";
+          ctx.font = `bold ${titleSize}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText("Reflection", canvas.width / 2, isMobile ? 100 : 150);
+
+          // Draw the reflection message
+          ctx.font = `${messageSize}px Arial`;
+          ctx.fillStyle = "#34495e";
+
+          // Break the message into multiple lines for better readability
+          const words = this.message.split(" ");
+          const maxWordsPerLine = isMobile ? 6 : 10;
+          const lines = [];
+
+          for (let i = 0; i < words.length; i += maxWordsPerLine) {
+            lines.push(words.slice(i, i + maxWordsPerLine).join(" "));
+          }
+
+          const startY = isMobile ? 200 : 300;
+          const lineHeight = isMobile ? 45 : 55;
+
+          lines.forEach((line, index) => {
+            ctx.fillText(line, canvas.width / 2, startY + index * lineHeight);
+          });
+
+          // Draw the reflection image below the text
+          const imageY =
+            startY + lines.length * lineHeight + (isMobile ? 120 : 180);
+          const imageSize = isMobile ? 175 : 300;
+          this.drawPNGImage(
+            ctx,
+            this.reflectionImageType,
+            canvas.width / 2,
+            imageY,
+            imageSize
+          );
+
+          // Instructions
+          ctx.font = `${instructionSize}px Arial`;
+          ctx.fillStyle = "#7f8c8d";
+          const instructionY = canvas.height - (isMobile ? 100 : 150);
+          if (isMobile) {
+            ctx.fillText(
+              "Tap anywhere to continue",
+              canvas.width / 2,
+              instructionY
+            );
+          } else {
+            ctx.fillText(
+              "Click anywhere or press Enter to continue",
+              canvas.width / 2,
+              instructionY
+            );
+          }
+        }
+
+        handleClick(x, y) {
+          this.continue();
+        }
+
+        handleAction(command) {
+          if (command.getType() === "START") {
+            if (command.getName() === "CONTINUE") {
+              this.continue();
+            } else if (command.getName() === "MENU") {
+              this.game.changeScene("MENU", new Scene_Menu(this.game));
+            }
+          }
+        }
+      }
 
       class Scene_Scale extends Scene {
-    constructor(gameEngine, pillarIndex, onContinueCallback) {
-        super(gameEngine);
-        this.pillarIndex = pillarIndex;
-        this.onContinueCallback = onContinueCallback;
-        this.registerActions();
+        constructor(gameEngine, pillarIndex, onContinueCallback) {
+          super(gameEngine);
+          this.pillarIndex = pillarIndex;
+          this.onContinueCallback = onContinueCallback;
+          this.registerActions();
 
-        // Scale questions for each pillar - using the detailed questions from the document
-        this.scaleQuestions = [
-            // Emotional Pillar
+          // Scale questions for each pillar
+          this.scaleQuestions = [
+            // Emotional
             [
-                "How well do you recognize, identify, and understand your emotions as they arise?",
-                "How effectively do you manage and regulate your emotions, especially intense or difficult ones?",
-                "How appropriately and effectively do you express your emotions to others?",
-                "How well do you understand, connect with, and respond to others' emotions?",
-                "How quickly and effectively do you bounce back from emotional setbacks and maintain emotional balance?"
+              "How well do you recognize, identify, and understand your emotions as they arise?",
+              "How effectively do you manage and regulate your emotions, especially intense or difficult ones?",
+              "How appropriately and effectively do you express your emotions to others?",
+              "How well do you understand, connect with, and respond to others' emotions?",
+              "How quickly and effectively do you bounce back from emotional setbacks and maintain emotional balance?",
             ],
-            // Purpose Pillar
+            // Purpose
             [
-                "How clear and defined is your sense of life purpose and personal mission?",
-                "How consistently do your daily actions and major life decisions align with your core values?",
-                "How engaged are you in pursuing goals that feel personally meaningful and fulfilling?",
-                "How well do you create positive impact and contribute to something beyond yourself?",
-                "How effectively do you extract purpose and meaning from both positive and challenging life experiences?"
+              "How clear and defined is your sense of life purpose and personal mission?",
+              "How consistently do your daily actions and major life decisions align with your core values?",
+              "How engaged are you in pursuing goals that feel personally meaningful and fulfilling?",
+              "How well do you create positive impact and contribute to something beyond yourself?",
+              "How effectively do you extract purpose and meaning from both positive and challenging life experiences?",
             ],
-            // Financial Pillar
+            // Financial
             [
-                "How well do you manage anxiety, worry, and stress related to money and financial matters?",
-                "How positive and healthy is your relationship with money and your beliefs about financial abundance?",
-                "How confident and clear-headed are you when making important financial decisions?",
-                "How well do you control emotional spending and maintain healthy financial boundaries?",
-                "How emotionally secure and peaceful do you feel about your financial future and planning?"
+              "How well do you manage anxiety, worry, and stress related to money and financial matters?",
+              "How positive and healthy is your relationship with money and your beliefs about financial abundance?",
+              "How confident and clear-headed are you when making important financial decisions?",
+              "How well do you control emotional spending and maintain healthy financial boundaries?",
+              "How emotionally secure and peaceful do you feel about your financial future and planning?",
             ],
-            // Physical Pillar
+            // Physical
             [
-                "How comfortable and accepting are you of your physical body and appearance?",
-                "How well do you manage worry, fear, and anxiety related to physical health concerns?",
-                "How healthy is your emotional relationship with exercise, movement, and physical activity?",
-                "How well do you emotionally cope with physical discomfort, illness, or chronic conditions?",
-                "How effectively do you maintain emotional balance when dealing with physical fatigue or low energy?"
+              "How comfortable and accepting are you of your physical body and appearance?",
+              "How well do you manage worry, fear, and anxiety related to physical health concerns?",
+              "How healthy is your emotional relationship with exercise, movement, and physical activity?",
+              "How well do you emotionally cope with physical discomfort, illness, or chronic conditions?",
+              "How effectively do you maintain emotional balance when dealing with physical fatigue or low energy?",
             ],
-            // Mental Pillar
+            // Mental
             [
-                "How well do you recognize and redirect negative, repetitive, or destructive thought patterns?",
-                "How effectively do you manage emotional responses to mental pressure, information overload, or cognitive demands?",
-                "How well do you maintain emotional balance when experiencing mental fog, distraction, or cognitive difficulties?",
-                "How kind, supportive, and constructive is your internal mental dialogue and self-talk?",
-                "How well do you recognize your mental health needs and take proactive steps to maintain psychological well-being?"
+              "How well do you recognize and redirect negative, repetitive, or destructive thought patterns?",
+              "How effectively do you manage emotional responses to mental pressure, information overload, or cognitive demands?",
+              "How well do you maintain emotional balance when experiencing mental fog, distraction, or cognitive difficulties?",
+              "How kind, supportive, and constructive is your internal mental dialogue and self-talk?",
+              "How well do you recognize your mental health needs and take proactive steps to maintain psychological well-being?",
             ],
-            // Environmental Pillar
+            // Environmental
             [
-                "How well do you adapt emotionally when your physical or social environment changes unexpectedly?",
-                "How effectively do you manage your emotional responses when in high-stress, toxic, or overwhelming environments?",
-                "How well do you create and maintain healthy emotional boundaries between yourself and negative environmental influences?",
-                "How proactively do you design and cultivate environments that support your emotional well-being?",
-                "How aware are you of how different environments affect your emotional state, and how well do you use this awareness to make healthy choices?"
+              "How well do you adapt emotionally when your physical or social environment changes unexpectedly?",
+              "How effectively do you manage your emotional responses when in high-stress, toxic, or overwhelming environments?",
+              "How well do you create and maintain healthy emotional boundaries between yourself and negative environmental influences?",
+              "How proactively do you design and cultivate environments that support your emotional well-being?",
+              "How aware are you of how different environments affect your emotional state, and how well do you use this awareness to make healthy choices?",
             ],
-            // Spiritual Pillar
+            // Spiritual
             [
-                "How connected do you feel to something greater than yourself (God, universe, nature, humanity, divine energy)?",
-                "How regularly do you engage in spiritual practices that nurture your soul and deepen your connection?",
-                "How often do you experience a sense of the sacred, wonder, or reverence in daily life?",
-                "How strong is your faith or trust in life's unfolding, even during uncertain or difficult times?",
-                "How well do you recognize, embrace, and integrate transcendent or mystical experiences into your daily life?"
-            ]
-        ];
+              "How connected do you feel to something greater than yourself (God, universe, nature, humanity, divine energy)?",
+              "How regularly do you engage in spiritual practices that nurture your soul and deepen your connection?",
+              "How often do you experience a sense of the sacred, wonder, or reverence in daily life?",
+              "How strong is your faith or trust in life's unfolding, even during uncertain or difficult times?",
+              "How well do you recognize, embrace, and integrate transcendent or mystical experiences into your daily life?",
+            ],
+          ];
 
-        // Input values - present and target scores (changed to 5 questions)
-        this.presentScores = [0, 0, 0, 0, 0];
-        this.targetScores = [0, 0, 0, 0, 0];
-        this.activeInput = null; // {type: 'present'|'target', index: number}
-        this.inputBoxes = [];
-        this.setupInputBoxes();
-    }
+          // Input values - present and target scores
+          this.presentScores = [0, 0, 0, 0, 0];
+          this.targetScores = [0, 0, 0, 0, 0];
+          this.activeInput = null; // {type: 'present'|'target', index: number}
+          this.inputBoxes = [];
+          this.setupInputBoxes();
+        }
 
+<<<<<<< HEAD
    setupInputBoxes() {
     const isMobile = window.innerWidth <= 768;
     const canvas = this.game.canvas;
@@ -594,51 +661,98 @@
         });
     }
 }
+=======
+        setupInputBoxes() {
+          const isMobile = window.innerWidth <= 768;
+          const canvas = this.game.canvas;
+          const startY = isMobile ? 300 : 400;
+          const rowHeight = isMobile ? 80 : 90; // Increased for better spacing with longer questions
+          const boxWidth = isMobile ? 60 : 80;
+          const boxHeight = isMobile ? 40 : 50;
 
-    registerActions() {
-        this.registerAction('Enter', 'CONTINUE');
-        this.registerAction('Escape', 'MENU');
-    }
+          // Present score column X position
+          const presentX = canvas.width / 2 - (isMobile ? 80 : 100);
+          // Target score column X position
+          const targetX = canvas.width / 2 + (isMobile ? 100 : 120);
 
-    update(dt) {
-        this.entityManager.update();
-    }
+          this.inputBoxes = [];
 
-    // Validation function to check if all fields are filled
-    validateAllFieldsFilled() {
-        for (let i = 0; i < 5; i++) {
-            if (this.presentScores[i] === 0 || this.targetScores[i] === 0) {
-                return false;
-            }
+          for (let i = 0; i < 5; i++) {
+            const y = startY + i * rowHeight;
+            const adjustedY = y + (isMobile ? 30 : -95);
+
+            // Present score input box
+            this.inputBoxes.push({
+              type: "present",
+              index: i,
+              x: presentX,
+              y: adjustedY,
+              width: boxWidth,
+              height: boxHeight,
+            });
+
+            // Target score input box
+            this.inputBoxes.push({
+              type: "target",
+              index: i,
+              x: targetX,
+              y: adjustedY,
+              width: boxWidth,
+              height: boxHeight,
+            });
+          }
         }
-        return true;
-    }
+>>>>>>> 13a6a9a151d98f43dad4bba81fb91f8133970b9d
 
-    // Helper function to wrap text
-    wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-        const words = text.split(' ');
-        let line = '';
-        let lines = [];
+        registerActions() {
+          this.registerAction("Enter", "CONTINUE");
+          this.registerAction("Escape", "MENU");
+        }
 
-        for (let n = 0; n < words.length; n++) {
-            const testLine = line + words[n] + ' ';
+        update(dt) {
+          this.entityManager.update();
+        }
+
+        // Validation function to check if all fields are filled
+        validateAllFieldsFilled() {
+          for (let i = 0; i < 5; i++) {
+            if (this.presentScores[i] === 0 || this.targetScores[i] === 0) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        // Helper function to wrap text
+        wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+          const words = text.split(" ");
+          let line = "";
+          let lines = [];
+
+          for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + " ";
             const metrics = ctx.measureText(testLine);
             const testWidth = metrics.width;
             if (testWidth > maxWidth && n > 0) {
-                lines.push(line);
-                line = words[n] + ' ';
+              lines.push(line);
+              line = words[n] + " ";
             } else {
-                line = testLine;
+              line = testLine;
             }
-        }
-        lines.push(line);
+          }
+          lines.push(line);
 
-        for (let i = 0; i < lines.length; i++) {
-            ctx.fillText(lines[i], x, y + (i * lineHeight));
+          for (let i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], x, y + i * lineHeight);
+          }
+          return lines.length * lineHeight;
         }
-        return lines.length * lineHeight;
-    }
 
+        render(ctx) {
+          const canvas = ctx.canvas;
+          const isMobile = window.innerWidth <= 768;
+
+<<<<<<< HEAD
     render(ctx) {
     const canvas = ctx.canvas;
     const isMobile = window.innerWidth <= 768;
@@ -1048,517 +1162,1170 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
                         anim.currentScale += dt * anim.speed;
                         if (anim.currentScale > anim.targetScale) {
                             anim.currentScale = anim.targetScale;
+=======
+          // Background
+          ctx.fillStyle = "#f5f5f5";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const titleSize = isMobile ? 40 : 50;
+          const questionSize = isMobile ? 30 : 30;
+          const headerSize = isMobile ? 28 : 32;
+          const instructionSize = isMobile ? 20 : 24;
+
+          // Title
+          ctx.fillStyle = "#2c3e50";
+          ctx.font = `bold ${titleSize}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText(
+            "Self-Assessment Scale",
+            canvas.width / 2,
+            isMobile ? 60 : 80
+          );
+
+            // Rating Guide
+            const ratingText = [
+                "0–4 = Very Poor",
+                "5–8 = Poor",
+                "9–12 = Fair",
+                "13–16 = Good",
+                "17–20 = Excellent"
+            ];
+
+            const paddedRatingText = ratingText.map(t => t.padStart(25));
+
+          ctx.fillStyle = "#2c3e50";
+          ctx.font = `25px monospace`;
+          ctx.textAlign = "right";
+            
+          const marginRight = isMobile ? 20 : 40;
+          const ratingTextStartY = isMobile ? 60 : 80;
+          const lineSpacing = isMobile ? 22 : 50;
+
+          for (let i = 0; i < paddedRatingText.length; i++) {
+            ctx.fillText(paddedRatingText[i], canvas.width - marginRight, ratingTextStartY + i *lineSpacing);
+          }
+
+
+          // Column headers
+          ctx.font = `bold ${headerSize}px Arial`;
+          ctx.fillStyle = "#34495e";
+
+          const headerY = isMobile ? 180 : 200;
+          const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 70); // Increased from 120/150
+          const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 160);
+
+          ctx.textAlign = "center";
+          ctx.fillText("Present Score", presentHeaderX, headerY);
+          ctx.fillText("Target Score", targetHeaderX, headerY);
+
+          // Scale instruction
+          ctx.font = `${instructionSize}px Arial`;
+          ctx.fillStyle = "#7f8c8d";
+          const scaleOffsetX = 47;
+          ctx.fillText("Scale 0 - 20", canvas.width / 2 + scaleOffsetX, headerY + 60);
+
+          // Questions and input boxes
+          ctx.font = `${questionSize}px Arial`;
+          ctx.fillStyle = "#2c3e50";
+
+          const startY = isMobile ? 260 : 300;
+          const rowHeight = isMobile ? 80 : 90;
+          const questions = this.scaleQuestions[this.pillarIndex];
+
+          for (let i = 0; i < 5; i++) {
+            const y = startY + i * rowHeight;
+
+            // Question number and text
+            ctx.textAlign = "left";
+            const questionX = isMobile ? 20 : 50;
+            const questionMaxWidth = isMobile ? 700 : 700;
+
+            // Use wrapText for longer questions
+            const lineHeight = isMobile ? 45 : 26;
+            this.wrapText(
+              ctx,
+              `${i + 1}. ${questions[i]}`,
+              questionX,
+              y + 20,
+              questionMaxWidth,
+              lineHeight
+            );
+
+            // Draw input boxes
+            for (let box of this.inputBoxes) {
+              if (box.index === i) {
+                // Box background
+                ctx.fillStyle =
+                  this.activeInput &&
+                  this.activeInput.type === box.type &&
+                  this.activeInput.index === box.index
+                    ? "#e3f2fd"
+                    : "white";
+                ctx.fillRect(box.x, box.y, box.width, box.height);
+
+                // Box border
+                ctx.strokeStyle =
+                  this.activeInput &&
+                  this.activeInput.type === box.type &&
+                  this.activeInput.index === box.index
+                    ? "#2196f3"
+                    : "#ccc";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                // Value text
+                ctx.fillStyle = "#2c3e50";
+                ctx.textAlign = "center";
+                const value =
+                  box.type === "present"
+                    ? this.presentScores[i]
+                    : this.targetScores[i];
+                
+                    
+                    const isActive = this.activeInput &&
+                                    this.activeInput.type === box.type &&
+                                    this.activeInput.index === box.index;
+
+                    const valueStr = (isNaN(value) || value === 0) ? "" : value.toString();
+                    ctx.textBaseline = "middle";
+                    const centerX = box.x + box.width / 2;
+                    const centerY = box.y + box.height / 2;
+
+                    ctx.fillText(valueStr, centerX, centerY);
+
+                    // Draw blinking cursor if active
+                    if(isActive) {
+                        const now = Date.now();
+                        if(Math.floor(now / 500) % 2 === 0) { // blink every 500ms
+                            
+                            const textWidth = valueStr ? ctx.measureText(valueStr).width : 0;
+                            const cursorX = centerX + textWidth / 2 + 2;
+                            const cursorY = centerY - questionSize / 2;
+                            const cursorHeight = questionSize - 1;
+                            ctx.beginPath();
+                            ctx.moveTo(cursorX, cursorY);
+                            ctx.lineTo(cursorX, cursorY + cursorHeight);
+                            ctx.strokeStyle = '#2c3e50';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+>>>>>>> 13a6a9a151d98f43dad4bba81fb91f8133970b9d
                         }
                     }
-                }
+                
+              }
             }
+          }
 
-            render(ctx) {
-                if (this.currentPillar >= this.TOTAL_PILLARS) {
-                    return;
-                }
+          // Total scores
+          const totalY = startY + (5 * rowHeight + 40);
 
-                const canvas = ctx.canvas;
-                const isMobile = window.innerWidth <= 768;
+          // First draw "TOTAL SCORES" label ABOVE the numbers
+          ctx.font = `${instructionSize}px Arial`;
+          ctx.fillStyle = "#7f8c8d";
+          ctx.textAlign = "center";
+          const totalOffsetX = 43;
+          ctx.fillText("TOTAL SCORES", canvas.width / 2 + totalOffsetX, totalY - 30);
 
-                ctx.fillStyle = this.pillarColors[this.currentPillar];
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = `bold ${headerSize}px Arial`;
+          ctx.fillStyle = "#2c3e50";
+          ctx.textAlign = "center";
 
-                const titleSize = isMobile ? 70 : 80;
-                const questionSize = isMobile ? 32 : 40;
-                const optionSize = isMobile ? 36 : 45;
+          const presentTotal = this.presentScores.reduce((a, b) => a + b, 0);
+          const targetTotal = this.targetScores.reduce((a, b) => a + b, 0);
 
-                ctx.fillStyle = 'black';
-                ctx.font = `bold ${titleSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText(this.pillarTitles[this.currentPillar], canvas.width / 2, isMobile ? 100 : 200);
+          ctx.fillText(`${presentTotal}`, presentHeaderX, totalY + 20);
+          ctx.fillText(`${targetTotal}`, targetHeaderX, totalY + 20);
 
-                // Draw the pillar question
-                ctx.font = `${questionSize}px Arial`;
-                const question = this.pillarQuestions[this.currentPillar];
-                const words = question.split(' ');
-                const maxWordsPerLine = isMobile ? 8 : 12;
-                const lines = [];
+          // Validation message if not all fields are filled
+          if (!this.validateAllFieldsFilled()) {
+            ctx.font = `bold ${instructionSize}px Arial`;
+            ctx.fillStyle = "#e74c3c"; // Red color for validation message
+            ctx.textAlign = "center";
+            ctx.fillText(
+              "Please fill all fields before continuing",
+              canvas.width / 2,
+              totalY + 100
+            );
+          }
 
-                for (let i = 0; i < words.length; i += maxWordsPerLine) {
-                    lines.push(words.slice(i, i + maxWordsPerLine).join(' '));
-                }
+          // Notes instruction
+          const notesY = totalY + (this.validateAllFieldsFilled() ? 80 : 165);
+          ctx.font = `${instructionSize}px Arial`;
+          ctx.fillStyle = "#7f8c8d";
+          ctx.textAlign = "center";
+          ctx.fillText(
+            "Take some notes on your feelings and thoughts about these scores",
+            canvas.width / 2,
+            notesY
+          );
 
-                const questionStartY = isMobile ? 160 : 280;
-                const questionLineHeight = isMobile ? 40 : 50;
-
-                lines.forEach((line, index) => {
-                    ctx.fillText(line, canvas.width / 2, questionStartY + index * questionLineHeight);
-                });
-
-                // Draw options
-                ctx.font = `${optionSize}px Arial`;
-                const options = this.pillarOptions[this.currentPillar];
-
-                for (let i = 0; i < options.length; i++) {
-                    const rect = this.optionRects[i];
-
-                    // Draw button background
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-
-                    // Draw button border
-                    ctx.strokeStyle = 'black';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
-
-                    // Draw text centered in button
-                    ctx.fillStyle = 'black';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(options[i], rect.x + rect.width / 2, rect.y + rect.height / 2);
-                }
-
-                // Draw collected items
-                for (let anim of this.animatedItems) {
-                    const size = (isMobile ? 80 : 120) * anim.currentScale;
-                    const itemY = isMobile ? 900 : anim.y;
-                    const spacing = isMobile ? 80 : 120;
-                    const totalWidth = (this.animatedItems.length - 1) * spacing;
-                    const startX = (canvas.width - totalWidth) / 2;
-                    const itemX = startX + (this.animatedItems.indexOf(anim) * spacing);
-
-                    this.drawPNGImage(ctx, anim.imageType, itemX, itemY, size);
-                }
-
-                if (isMobile) {
-                    ctx.fillStyle = 'black';
-                    ctx.font = '28px Arial';
-                    ctx.textAlign = 'right';
-                    ctx.fillText(`${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`, canvas.width - 50, 50);
-                } else {
-                    ctx.fillStyle = 'black';
-                    ctx.font = '35px Arial';
-                    ctx.textAlign = 'right';
-                    ctx.fillText(`${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`, canvas.width - 100, 80);
-                }
-            }
-            handleClick(x, y) {
-                if (this.state !== 'ShowOptions') return;
-
-                for (let i = 0; i < this.optionRects.length; i++) {
-                    const rect = this.optionRects[i];
-                    if (x >= rect.x && x <= rect.x + rect.width &&
-                        y >= rect.y && y <= rect.y + rect.height) {
-
-                        const reflectionMessage = this.pillarReflections[this.currentPillar][rect.index];
-                        const currentPillarIndex = this.currentPillar;
-
-                        // Get the reflection image for this pillar
-                        const reflectionImageType = this.getReflectionImageType(this.currentPillar);
-
-                        const nextPillarIndex = this.currentPillar + 1;
-                        const reflectionScene = new Scene_Reflection(this.game, reflectionMessage, reflectionImageType, () => {
-                            const scaleScene = new Scene_Scale(this.game, this.currentPillar, () => {
-                                this.loadItemTexture();
-                                if (nextPillarIndex >= this.TOTAL_PILLARS) {
-                                    this.game.changeScene('END', new Scene_End(this.game, this.game.imageManager));
-                                } else {
-                                    this.game.changeScene('PLAY', new Scene_Game(this.game, this.imageManager, nextPillarIndex, this.animatedItems));
-                                }
-                            });
-                            this.game.changeScene('SCALE', scaleScene);
-                        });
-
-                        this.game.changeScene('REFLECTION', reflectionScene);
-                        break;
-                    }
-                }
-            }
-
-            // Add this new method to Scene_Game
-            getReflectionImageType(pillarIndex) {
-                const reflectionImageTypes = [
-                    'emotional-reflection',  // Your watercolor heart image
-                    'purpose-reflection',
-                    'financial-reflection',
-                    'physical-reflection',
-                    'mental-reflection',
-                    'environmental-reflection',
-                    'spiritual-reflection'
-                ];
-                return reflectionImageTypes[pillarIndex] || 'emotional-reflection';
-            }
-
-
-            handleAction(command) {
-                // Handle keyboard actions if needed
-            }
-
-            onEnd() {
-                // Scene cleanup
-            }
+          // Continue instruction
+          const continueY = canvas.height - (isMobile ? 60 : 50);
+          ctx.fillStyle = this.validateAllFieldsFilled()
+            ? "#7f8c8d"
+            : "#bdc3c7"; // Dimmed if validation fails
+          ctx.fillText(
+            isMobile
+              ? "Tap to continue"
+              : "Click anywhere or press Enter to continue",
+            canvas.width / 2,
+            continueY
+          );
         }
 
-        // End Scene
-        class Scene_End extends Scene {
-            constructor(gameEngine, imageManager) {
-                super(gameEngine);
-                this.registerActions();
-                this.bookingLinkArea = null;
-                this.fundamentallyMeLinkArea = null;
-                this.imageManager = imageManager;
+        handleClick(x, y) {
+          // Check if click is on an input box
+          for (let box of this.inputBoxes) {
+            if (
+              x >= box.x &&
+              x <= box.x + box.width &&
+              y >= box.y &&
+              y <= box.y + box.height
+            ) {
+              this.activeInput = { type: box.type, index: box.index };
 
-                this.iconKeys = [
-                    'heart2',
-                    'trophy',
-                    'money',
-                    'ring',
-                    'brain',
-                    'plant',
-                    'spiritual'
-                ];
-            }
+              const input = document.getElementById("hiddenInput");
+              const rect = this.game.canvas.getBoundingClientRect();
+              const scaleX = this.game.scaleX;
+              const scaleY = this.game.scaleY;
 
-            registerActions() {
-                this.registerAction('Escape', 'QUIT');
-            }
+              input.style.left = `${rect.left + box.x / scaleX}px`;
+              input.style.top = `${rect.top + box.y / scaleY}px`;
+              input.style.width = `${box.width / scaleX}px`;
+              input.style.height = `${box.height / scaleY}px`;
+              input.style.opacity = 1;
+              input.style.pointerEvents = 'auto';
+              input.value = '';
 
-            update(dt) {
-                // No updates needed
-            }
+              input.focus();
 
-            render(ctx) {
-                const canvas = ctx.canvas;
-                const isMobile = window.innerWidth <= 768;
-
-                ctx.fillStyle = '#549aa3';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                const titleSize = isMobile ? 80 : 100;
-                const subtitleSize = isMobile ? 45 : 60;
-                const footerSize = isMobile ? 40 : 50;
-                const linkSize = isMobile ? 32 : 45;
-                const instructionSize = isMobile ? 28 : 30;
-
-                ctx.fillStyle = 'black';
-                ctx.font = `bold ${titleSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 100 : 120);
-
-                ctx.font = `${subtitleSize}px Arial`;
-                const subtitleY = isMobile ? 180 : 230;
-                if (isMobile) {
-                    ctx.fillText('You have discovered', canvas.width / 2, subtitleY);
-                    ctx.fillText('all 7 Pillars of Self!', canvas.width / 2, subtitleY + 50);
+              input.oninput = () => {
+                const value = parseInt(input.value);
+                if(!isNaN(value) && value >= 0 && value <= 20) {
+                  this.presentScores[box.index] = value;
                 } else {
-                    ctx.fillText('You have discovered all 7 Pillars of Self!', canvas.width / 2, subtitleY);
+                  this.targetScores[box.index] = value;
                 }
+              };
 
-                // Draw icons in a circle
-                const iconKeys = [
-                    'heart2', 'trophy', 'money', 'ring', 'brain', 'plant', 'spiritual'
-                ];
-
-                const centerX = canvas.width / 2;
-                const centerY = isMobile ? 450 : 515;
-                const radius = isMobile ? 120 : 180;
-                const iconSize = isMobile ? 60 : 80;
-
-                for (let i = 0; i < iconKeys.length; i++) {
-                    const angle = (i / iconKeys.length) * 2 * Math.PI;
-                    const x = centerX + radius * Math.cos(angle);
-                    const y = centerY + radius * Math.sin(angle);
-
-                    const img = this.imageManager.getImage(iconKeys[i]);
-                    console.log(`Drawing icon: ${iconKeys[i]}`, img);
-                    if (img) {
-                        ctx.drawImage(img, x - iconSize / 2, y - iconSize / 2, iconSize, iconSize);
-                    }
-                }
-
-                const centralIcon = this.imageManager.getImage('meditate');
-                const centralSize = isMobile ? 80 : 100;
-                if (centralIcon) {
-                    ctx.drawImage(
-                        centralIcon,
-                        centerX - centralSize / 2,
-                        centerY - centralSize / 2,
-                        centralSize,
-                        centralSize
-                    );
-                }
-
-                ctx.font = `${footerSize}px Arial`;
-                const footerY = isMobile ? 650 : 775;
-                if (isMobile) {
-                    ctx.fillText('Keep growing with', canvas.width / 2, footerY);
-                    ctx.fillText('Emotional Fitness Academy', canvas.width / 2, footerY + 50);
-                } else {
-                    ctx.fillText('Keep growing with Emotional Fitness Academy', canvas.width / 2, footerY);
-                }
-
-
-
-                ctx.font = `${linkSize}px Arial`;
-                const linkY = isMobile ? 800 : 850;
-                // First clickable link - fundamentally-me
-                ctx.fillStyle = '#0066cc'; // Blue color for link
-                ctx.font = `bold ${linkSize}px Arial`;
-                if (isMobile) {
-                    ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
-                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 40);
-
-                    // Store the fundamentally-me link area for click detection
-                    this.fundamentallyMeLinkArea = {
-                        x: canvas.width / 2 - 350,
-                        y: linkY + 40 - 30,
-                        width: 700,
-                        height: 60
-                    };
-                } else {
-                    ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
-                    // Blue link on next line for PC too
-                    ctx.fillStyle = '#0066cc';
-                    ctx.font = `bold ${linkSize}px Arial`;
-                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 60);
-
-                    // Store the fundamentally-me link area for click detection
-                    this.fundamentallyMeLinkArea = {
-                        x: canvas.width / 2 - 400,
-                        y: linkY + 60 - 30,
-                        width: 800,
-                        height: 60
-                    };
-                }
-
-                // Second clickable link - booking
-                const bookingY = isMobile ? 900 : 975;
-                ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
-
-                // Store the booking link area for click detection
-                this.bookingLinkArea = {
-                    x: canvas.width / 2 - 300,
-                    y: bookingY - 30,
-                    width: 600,
-                    height: 60
-                };
-
-                ctx.fillStyle = 'black'; // Reset color
-                ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 975 : 1050;
-                if (isMobile) {
-                    ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
-                } else {
-                    ctx.fillText('Click links above or click elsewhere to return to menu', canvas.width / 2, instructionY);
-                }
+              input.onblur = () => {
+                input.style.opacity = 0;
+                input.style.pointerEvents = 'none';
+                this.activeInput = null;
+              };
+              
+              return;
             }
+          }
 
-            handleClick(x, y) {
-
-                // Check if click is on fundamentally-me link
-                if (this.fundamentallyMeLinkArea &&
-                    x >= this.fundamentallyMeLinkArea.x &&
-                    x <= this.fundamentallyMeLinkArea.x + this.fundamentallyMeLinkArea.width &&
-                    y >= this.fundamentallyMeLinkArea.y &&
-                    y <= this.fundamentallyMeLinkArea.y + this.fundamentallyMeLinkArea.height) {
-                    // Open fundamentally-me link
-                    window.open('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', '_blank');
-                }
-                else if (this.bookingLinkArea &&
-                    x >= this.bookingLinkArea.x &&
-                    x <= this.bookingLinkArea.x + this.bookingLinkArea.width &&
-                    y >= this.bookingLinkArea.y &&
-                    y <= this.bookingLinkArea.y + this.bookingLinkArea.height) {
-                    // Open booking link
-                    window.open('https://efitacademy.ca/booking/', '_blank');
-                } else {
-                    // Return to menu for any other click
-                    this.game.changeScene('MENU', new Scene_Menu(this.game));
-                }
-            }
-
-            handleAction(command) {
-                if (command.getType() === 'START' && command.getName() === 'QUIT') {
-                    this.onEnd();
-                }
-            }
-
-            onEnd() {
-                console.log('Exiting game');
-            }
+          // Only continue if all fields are filled
+          if (this.validateAllFieldsFilled()) {
+            this.continue();
+          } else {
+            // Show alert if trying to continue without filling all fields
+            alert(
+              "Please fill all present and target scores before continuing."
+            );
+          }
         }
 
-        // Main Game Engine
-        class GameEngine {
-            constructor() {
-                this.canvas = document.getElementById('gameCanvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.running = true;
-                this.currentScene = '';
-                this.sceneMap = new Map();
-                this.simulationSpeed = 1;
-                this.imageManager = new ImageManager();
+        handleKeyPress(e) {
+          if (!this.activeInput) return;
 
-                this.initializeGame();
+          const { type, index } = this.activeInput;
+          const targetArray = type == "present" ? this.presentScores : this.targetScores;
+
+          if (e.key >= "0" && e.key <= "9") {
+            const current = targetArray[index].toString();
+            const newValue = parseInt(current + e.key); 
+
+            if (newValue <= 20) {
+              targetArray[index] = newValue;
             }
+          }
 
-            async initializeGame() {
-                // Load all images first
-                await this.imageManager.loadAllImages();
+          if (e.key === "Backspace") {
+            const current = targetArray[index].toString();
+            const newStr = current.slice(0, -1);
+            targetArray[index] = parseInt(newStr) || 0;
+          }
 
-                // Set up canvas
-                this.resizeCanvas();
-                window.addEventListener('resize', () => this.resizeCanvas());
-                window.addEventListener('orientationchange', () => this.resizeCanvas());
-
-                // Event listeners
-                this.setupEventListeners();
-
-                // Start with menu scene
-                this.changeScene('MENU', new Scene_Menu(this));
-
-                // Hide loading
-                document.getElementById('loading').style.display = 'none';
-
-                // Start game loop
-                this.lastTime = 0;
-                this.gameLoop();
-            }
-
-            resizeCanvas() {
-                const aspectRatio = 1920 / 1080; // 16:9 aspect ratio
-                const isMobile = window.innerWidth <= 768;
-
-                // Always maintain aspect ratio, even on mobile
-                if (window.innerWidth / window.innerHeight > aspectRatio) {
-                    // Window is wider than 16:9, fit to height
-                    this.canvas.style.height = Math.min(window.innerHeight * 0.95, 1080) + 'px';
-                    this.canvas.style.width = (parseFloat(this.canvas.style.height) * aspectRatio) + 'px';
-                } else {
-                    // Window is taller than 16:9, fit to width
-                    this.canvas.style.width = Math.min(window.innerWidth * 0.95, 1920) + 'px';
-                    this.canvas.style.height = (parseFloat(this.canvas.style.width) / aspectRatio) + 'px';
-                }
-
-                // Center the canvas
-                this.canvas.style.position = 'static';
-
-                // Calculate scaling factors for input handling
-                // this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
-                // this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
-                const rect = this.canvas.getBoundingClientRect();
-                this.scaleX = this.canvas.width / rect.width;
-                this.scaleY = this.canvas.height / rect.height;
-            }
-
-            setupEventListeners() {
-                document.addEventListener('keydown', (e) => {
-                    this.handleKeyDown(e);
-                });
-
-                this.canvas.addEventListener('click', (e) => {
-                    this.handleMouseClick(e);
-                });
-
-                this.canvas.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    this.handleTouch(e);
-                });
-
-                this.canvas.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                });
-
-                this.canvas.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                });
-
-                this.canvas.addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                });
-            }
-
-            handleKeyDown(e) {
-                const scene = this.getCurrentScene();
-                if (scene) {
-                    const actionMap = scene.getActionMap();
-                    if (actionMap.has(e.key)) {
-                        const command = new Command(actionMap.get(e.key), 'START');
-                        scene.handleAction(command);
-                    }
-                }
-            }
-
-            handleMouseClick(e) {
-                const rect = this.canvas.getBoundingClientRect();
-                const x = (e.clientX - rect.left) * this.scaleX;
-                const y = (e.clientY - rect.top) * this.scaleY;
-
-                const scene = this.getCurrentScene();
-                if (scene && scene.handleClick) {
-                    scene.handleClick(x, y);
-                }
-            }
-
-            handleTouch(e) {
-                if (e.touches.length > 0) {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    const x = (touch.clientX - rect.left) * this.scaleX;
-                    const y = (touch.clientY - rect.top) * this.scaleY;
-
-                    const scene = this.getCurrentScene();
-                    if (scene && scene.handleClick) {
-                        scene.handleClick(x, y);
-                    }
-                }
-            }
-
-            getCurrentScene() {
-                return this.sceneMap.get(this.currentScene);
-            }
-
-            changeScene(sceneName, scene, endCurrentScene = false) {
-    if (endCurrentScene) {
-        this.sceneMap.delete(this.currentScene);
-    }
-
-    // Always create fresh instances for these scenes
-    if (sceneName === 'PLAY' || sceneName === 'END' || sceneName === 'REFLECTION' || sceneName === 'SCALE') {
-        this.sceneMap.set(sceneName, scene);
-    } else if (!this.sceneMap.has(sceneName)) {
-        this.sceneMap.set(sceneName, scene);
-    }
-
-    this.currentScene = sceneName;
-}
-
-            gameLoop(currentTime = 0) {
-                if (!this.running) return;
-
-                const deltaTime = (currentTime - this.lastTime) / 1000;
-                this.lastTime = currentTime;
-
-                const scene = this.getCurrentScene();
-                if (scene) {
-                    scene.update(deltaTime);
-                    scene.render(this.ctx);
-                }
-
-                requestAnimationFrame((time) => this.gameLoop(time));
-            }
-
-            isRunning() {
-                return this.running;
-            }
-
-            quit() {
-                this.running = false;
-                console.log('Game quit');
-            }
+          if (e.key === "Enter") {
+            this.activeInput = null;
+          }
         }
 
-        // Start the game when page loads
-        window.addEventListener('load', () => {
-            new GameEngine();
-        });
+        showNumberInput(box) {}
+
+        continue() {
+          // Double-check validation before proceeding
+          if (this.validateAllFieldsFilled()) {
+            this.onContinueCallback();
+          } else {
+            alert(
+              "Please fill all present and target scores before continuing."
+            );
+          }
+        }
+
+        handleAction(command) {
+          if (command.getType() === "START") {
+            if (command.getName() === "CONTINUE") {
+              this.continue();
+            } else if (command.getName() === "MENU") {
+              this.game.changeScene("MENU", new Scene_Menu(this.game));
+            }
+          }
+        }
+      }
+
+      // Game Scene
+      class Scene_Game extends Scene {
+        constructor(
+          gameEngine,
+          imageManager,
+          pillarIndex = 0,
+          previousItems = []
+        ) {
+          super(gameEngine);
+          this.currentPillar = pillarIndex;
+          this.TOTAL_PILLARS = 7;
+          this.journeyFinished = false;
+          this.clickLocked = false;
+          this.state = "ShowOptions";
+          this.hasStarted = false;
+          this.imageManager = imageManager;
+
+          this.pillarTitles = [
+            "Emotional",
+            "Purpose",
+            "Financial",
+            "Physical",
+            "Mental",
+            "Environmental",
+            "Spiritual",
+          ];
+
+          this.pillarQuestions = [
+            "Which of these words most reflects the state of your heart right now?",
+            "Which of these words most reflects where you're being called to step forward in your life?",
+            "Which of these words best describes the relationship you want with your finances today?",
+            "Which of these words most speaks to your body's wisdom in this moment?",
+            "Which of these words most resonates with the mindset you'd like to strengthen today?",
+            "Which of these words most captures how you want to engage with your environment today?",
+            "Which of these words most speaks to your spirit's calling in this moment?",
+          ];
+
+          this.pillarColors = [
+            "#87CEEB",
+            "#D8BFD8",
+            "#ADD8E6",
+            "#98FB98",
+            "#90EE90",
+            "#FFE4B5",
+            "#FFA07A",
+          ];
+
+          this.pillarOptions = [
+            ["Awareness", "Vulnerability", "Compassion", "Connection"],
+            ["Vision", "Legacy", "Calling", "Contribution"],
+            ["Security", "Abundance", "Discipline", "Growth"],
+            ["Grounding", "Vitality", "Balance", "Resilience"],
+            ["Adaptability", "Control", "Resilience", "Optimism"],
+            ["Stewardship", "Sanctuary", "Regeneration", "Harmony"],
+            ["Transcendence", "Sacredness", "Alignment", "Ritual"],
+          ];
+
+          this.pillarReflections = [
+            [
+              "Pause for a moment—what emotion is rising within you right now, and what might it be trying to teach you?",
+              "What truth are you hiding from yourself that, if spoken aloud, could set you free?",
+              "How would your inner dialogue change today if you treated yourself with the same kindness you extend to others?",
+              "Where in your life do you long for deeper feeling or belonging—and what small step could you take today to build that bridge?",
+            ],
+            [
+              "Close your eyes—what future do you see for yourself—and what's one bold step toward bringing that vision to life?",
+              "When people tell your story years from now, what impact do you hope they remember—and how can you begin creating that today?",
+              "What activity pulls you into flow so completely you lose track of time—and how might you honor that calling more often?",
+              "Think of someone who needs what you have to give—what's the smallest way you could reach out and offer your gifts right now?",
+            ],
+            [
+              "How would your life shift if you felt truly protected against tomorrow's uncertainties—and what first step can you take to build that safety net?",
+              "Where in your finances do you already experience plenty—and how could you cultivate that sense of plenty to overflow into other areas of your life?",
+              "What habit around spending or saving feels hardest to maintain—and what gentle tweak could you introduce right now to strengthen your financial momentum?",
+              "Imagine your money as a seed—what would it take to nourish it so that it flourishes, supports you, and seeds new possibilities?",
+            ],
+            [
+              "When was the last time you felt fully rooted in your body—and what simple practice could you do right now to reconnect with that sense of stability?",
+              "What movement or ritual makes you feel most alive—and how might you carve out even five minutes today to honor that spark?",
+              "Which part of your daily rhythm feels out of sync—and what single change could bring you back into harmony?",
+              "Think back to a moment when your body carried you through difficulty—what inner strength did you discovered, and how can you draw on it now?",
+            ],
+            [
+              "What new possibility could you create if you leaned into change instead of resisting it?",
+              "Where in your life do you feel most out of control—and what small action could bring you back to your center?",
+              "Recall a time you bounced back stronger than before—how can that strength guide you today?",
+              "If you believed the best was yet to come, what bold step would you take right now?",
+            ],
+            [
+              "What responsibility do you feel to care for the spaces you inhabit—inside your mind, in your home, and in the wider world—and what's one small act you could take today to honor that responsibility?",
+              "Where do you instinctively seek refuge when life feels overwhelming—and how might you cultivate that sense of safety and peace within yourself, no matter where you are?",
+              "What part of your inner or outer environment feels depleted or worn—and what simple ritual or change could you introduce now to begin its renewal?",
+              "In what ways could you bring more balance between your inner landscape and the natural world—what is one step toward creating that flow of give-and-take in your life?",
+            ],
+            [
+              "What would it feel like if you could rise above your daily worries and glimpse something greater—where would you look, and what would you hope to discover?",
+              "Where in your life do you already sense the divine or the profound, and how might you honor that spark more fully in your everyday moments?",
+              "Imagine your actions, values, and spirit flowing in perfect harmony—what's the one shift you could make today to bring yourself closer to that alignment?",
+              "What simple, intentional act could you introduce into your day to call you back to presence, purpose, and prayer?",
+            ],
+          ];
+
+          this.animatedItems = [...previousItems];
+          this.optionRects = [];
+
+          this.registerActions();
+          this.updateTexts();
+        }
+
+        registerActions() {
+          this.registerAction("MouseClick", "MOUSE_CLICK");
+        }
+
+        updateTexts() {
+          this.optionRects = [];
+          const options = this.pillarOptions[this.currentPillar];
+          const isMobile = window.innerWidth <= 768;
+          const canvas = this.game.canvas;
+
+          const startY = isMobile ? 380 : 500;
+          const spacing = isMobile ? 80 : 90;
+          const rectHeight = isMobile ? 60 : 60;
+          const rectWidth = isMobile ? 350 : 400;
+
+          for (let i = 0; i < options.length; i++) {
+            const y = startY + i * spacing;
+            this.optionRects.push({
+              x: canvas.width / 2 - rectWidth / 2,
+              y: y - rectHeight / 2,
+              width: rectWidth,
+              height: rectHeight,
+              text: options[i],
+              index: i,
+            });
+          }
+
+          this.state = "ShowOptions";
+        }
+
+        loadItemTexture() {
+          if (this.currentPillar <= 7) {
+            const anim = {
+              currentScale: 0.0,
+              targetScale: 0.6,
+              speed: 2.5,
+              x: 100 + this.animatedItems.length * 120,
+              y: 1000,
+              pillar: this.currentPillar,
+              imageType: this.getPillarImageType(this.currentPillar),
+            };
+            this.animatedItems.push(anim);
+          }
+        }
+
+        getPillarImageType(pillarIndex) {
+          const imageTypes = [
+            "heart2",
+            "trophy",
+            "money",
+            "ring",
+            "brain",
+            "plant",
+            "spiritual",
+          ];
+          return imageTypes[pillarIndex] || "heart2";
+        }
+
+        drawPNGImage(ctx, imageType, x, y, size) {
+          const image = this.game.imageManager.getImage(imageType);
+          if (image) {
+            const drawX = x - size / 2;
+            const drawY = y - size / 2;
+
+            ctx.save();
+            ctx.globalAlpha = 1.0;
+            ctx.drawImage(image, drawX, drawY, size, size);
+            ctx.restore();
+          } else {
+            ctx.save();
+            ctx.fillStyle = this.getFallbackColor(imageType);
+            ctx.beginPath();
+            ctx.arc(x, y, size / 2, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+
+        getFallbackColor(imageType) {
+          const colors = {
+            heart2: "#FF0000",
+            trophy: "#FFD700",
+            money: "#00AA00",
+            plant: "#228B22",
+            brain: "#FF8C00",
+            ring: "#FFD700",
+            spiritual: "#FF4500",
+          };
+          return colors[imageType] || "#888888";
+        }
+
+        update(dt) {
+          if (this.currentPillar >= this.TOTAL_PILLARS) {
+            return;
+          }
+
+          for (let anim of this.animatedItems) {
+            if (anim.currentScale < anim.targetScale) {
+              anim.currentScale += dt * anim.speed;
+              if (anim.currentScale > anim.targetScale) {
+                anim.currentScale = anim.targetScale;
+              }
+            }
+          }
+        }
+
+        render(ctx) {
+          if (this.currentPillar >= this.TOTAL_PILLARS) {
+            return;
+          }
+
+          const canvas = ctx.canvas;
+          const isMobile = window.innerWidth <= 768;
+
+          ctx.fillStyle = this.pillarColors[this.currentPillar];
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const titleSize = isMobile ? 70 : 80;
+          const questionSize = isMobile ? 32 : 40;
+          const optionSize = isMobile ? 36 : 45;
+
+          ctx.fillStyle = "black";
+          ctx.font = `bold ${titleSize}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText(
+            this.pillarTitles[this.currentPillar],
+            canvas.width / 2,
+            isMobile ? 100 : 200
+          );
+
+          // Draw the pillar question
+          ctx.font = `${questionSize}px Arial`;
+          const question = this.pillarQuestions[this.currentPillar];
+          const words = question.split(" ");
+          const maxWordsPerLine = isMobile ? 8 : 12;
+          const lines = [];
+
+          for (let i = 0; i < words.length; i += maxWordsPerLine) {
+            lines.push(words.slice(i, i + maxWordsPerLine).join(" "));
+          }
+
+          const questionStartY = isMobile ? 160 : 280;
+          const questionLineHeight = isMobile ? 40 : 50;
+
+          lines.forEach((line, index) => {
+            ctx.fillText(
+              line,
+              canvas.width / 2,
+              questionStartY + index * questionLineHeight
+            );
+          });
+
+          // Draw options
+          ctx.font = `${optionSize}px Arial`;
+          const options = this.pillarOptions[this.currentPillar];
+
+          for (let i = 0; i < options.length; i++) {
+            const rect = this.optionRects[i];
+
+            // Draw button background
+            ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+            ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+
+            // Draw button border
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 3;
+            ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+
+            // Draw text centered in button
+            ctx.fillStyle = "black";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(
+              options[i],
+              rect.x + rect.width / 2,
+              rect.y + rect.height / 2
+            );
+          }
+
+          // Draw collected items
+          for (let anim of this.animatedItems) {
+            const size = (isMobile ? 80 : 120) * anim.currentScale;
+            const itemY = isMobile ? 900 : anim.y;
+            const spacing = isMobile ? 80 : 120;
+            const totalWidth = (this.animatedItems.length - 1) * spacing;
+            const startX = (canvas.width - totalWidth) / 2;
+            const itemX = startX + this.animatedItems.indexOf(anim) * spacing;
+
+            this.drawPNGImage(ctx, anim.imageType, itemX, itemY, size);
+          }
+
+          if (isMobile) {
+            ctx.fillStyle = "black";
+            ctx.font = "28px Arial";
+            ctx.textAlign = "right";
+            ctx.fillText(
+              `${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`,
+              canvas.width - 50,
+              50
+            );
+          } else {
+            ctx.fillStyle = "black";
+            ctx.font = "35px Arial";
+            ctx.textAlign = "right";
+            ctx.fillText(
+              `${this.currentPillar + 1} / ${this.TOTAL_PILLARS}`,
+              canvas.width - 100,
+              80
+            );
+          }
+        }
+        handleClick(x, y) {
+          if (this.state !== "ShowOptions") return;
+
+          for (let i = 0; i < this.optionRects.length; i++) {
+            const rect = this.optionRects[i];
+            if (
+              x >= rect.x &&
+              x <= rect.x + rect.width &&
+              y >= rect.y &&
+              y <= rect.y + rect.height
+            ) {
+              const reflectionMessage =
+                this.pillarReflections[this.currentPillar][rect.index];
+              const currentPillarIndex = this.currentPillar;
+
+              // Get the reflection image for this pillar
+              const reflectionImageType = this.getReflectionImageType(
+                this.currentPillar
+              );
+
+              const nextPillarIndex = this.currentPillar + 1;
+              const reflectionScene = new Scene_Reflection(
+                this.game,
+                reflectionMessage,
+                reflectionImageType,
+                () => {
+                  const scaleScene = new Scene_Scale(
+                    this.game,
+                    this.currentPillar,
+                    () => {
+                      this.loadItemTexture();
+                      if (nextPillarIndex >= this.TOTAL_PILLARS) {
+                        this.game.changeScene(
+                          "END",
+                          new Scene_End(this.game, this.game.imageManager)
+                        );
+                      } else {
+                        this.game.changeScene(
+                          "PLAY",
+                          new Scene_Game(
+                            this.game,
+                            this.imageManager,
+                            nextPillarIndex,
+                            this.animatedItems
+                          )
+                        );
+                      }
+                    }
+                  );
+                  this.game.changeScene("SCALE", scaleScene);
+                }
+              );
+
+              this.game.changeScene("REFLECTION", reflectionScene);
+              break;
+            }
+          }
+        }
+
+        // Add this new method to Scene_Game
+        getReflectionImageType(pillarIndex) {
+          const reflectionImageTypes = [
+            "emotional-reflection", // Your watercolor heart image
+            "purpose-reflection",
+            "financial-reflection",
+            "physical-reflection",
+            "mental-reflection",
+            "environmental-reflection",
+            "spiritual-reflection",
+          ];
+          return reflectionImageTypes[pillarIndex] || "emotional-reflection";
+        }
+
+        handleAction(command) {
+          // Handle keyboard actions if needed
+        }
+
+        onEnd() {
+          // Scene cleanup
+        }
+      }
+
+      // End Scene
+      class Scene_End extends Scene {
+        constructor(gameEngine, imageManager) {
+          super(gameEngine);
+          this.registerActions();
+          this.bookingLinkArea = null;
+          this.fundamentallyMeLinkArea = null;
+          this.imageManager = imageManager;
+
+          this.iconKeys = [
+            "heart2",
+            "trophy",
+            "money",
+            "ring",
+            "brain",
+            "plant",
+            "spiritual",
+          ];
+        }
+
+        registerActions() {
+          this.registerAction("Escape", "QUIT");
+        }
+
+        update(dt) {
+          // No updates needed
+        }
+
+        render(ctx) {
+          const canvas = ctx.canvas;
+          const isMobile = window.innerWidth <= 768;
+
+          ctx.fillStyle = "#549aa3";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          const titleSize = isMobile ? 80 : 100;
+          const subtitleSize = isMobile ? 45 : 60;
+          const footerSize = isMobile ? 40 : 50;
+          const linkSize = isMobile ? 32 : 45;
+          const instructionSize = isMobile ? 28 : 30;
+
+          ctx.fillStyle = "black";
+          ctx.font = `bold ${titleSize}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText(
+            "Congratulations!",
+            canvas.width / 2,
+            isMobile ? 100 : 120
+          );
+
+          ctx.font = `${subtitleSize}px Arial`;
+          const subtitleY = isMobile ? 180 : 230;
+          if (isMobile) {
+            ctx.fillText("You have discovered", canvas.width / 2, subtitleY);
+            ctx.fillText(
+              "all 7 Pillars of Self!",
+              canvas.width / 2,
+              subtitleY + 50
+            );
+          } else {
+            ctx.fillText(
+              "You have discovered all 7 Pillars of Self!",
+              canvas.width / 2,
+              subtitleY
+            );
+          }
+
+          // Draw icons in a circle
+          const iconKeys = [
+            "heart2",
+            "trophy",
+            "money",
+            "ring",
+            "brain",
+            "plant",
+            "spiritual",
+          ];
+
+          const centerX = canvas.width / 2;
+          const centerY = isMobile ? 450 : 515;
+          const radius = isMobile ? 120 : 180;
+          const iconSize = isMobile ? 60 : 80;
+
+          for (let i = 0; i < iconKeys.length; i++) {
+            const angle = (i / iconKeys.length) * 2 * Math.PI;
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+
+            const img = this.imageManager.getImage(iconKeys[i]);
+            console.log(`Drawing icon: ${iconKeys[i]}`, img);
+            if (img) {
+              ctx.drawImage(
+                img,
+                x - iconSize / 2,
+                y - iconSize / 2,
+                iconSize,
+                iconSize
+              );
+            }
+          }
+
+          const centralIcon = this.imageManager.getImage("meditate");
+          const centralSize = isMobile ? 80 : 100;
+          if (centralIcon) {
+            ctx.drawImage(
+              centralIcon,
+              centerX - centralSize / 2,
+              centerY - centralSize / 2,
+              centralSize,
+              centralSize
+            );
+          }
+
+          ctx.font = `${footerSize}px Arial`;
+          const footerY = isMobile ? 650 : 775;
+          if (isMobile) {
+            ctx.fillText("Keep growing with", canvas.width / 2, footerY);
+            ctx.fillText(
+              "Emotional Fitness Academy",
+              canvas.width / 2,
+              footerY + 50
+            );
+          } else {
+            ctx.fillText(
+              "Keep growing with Emotional Fitness Academy",
+              canvas.width / 2,
+              footerY
+            );
+          }
+
+          ctx.font = `${linkSize}px Arial`;
+          const linkY = isMobile ? 800 : 850;
+          // First clickable link - fundamentally-me
+          ctx.fillStyle = "#0066cc"; // Blue color for link
+          ctx.font = `bold ${linkSize}px Arial`;
+          if (isMobile) {
+            ctx.fillText(
+              "To know more details please visit:",
+              canvas.width / 2,
+              linkY
+            );
+            ctx.fillText(
+              "https://efitacademy.ca/fundamentally-me-7-pillars-of-self/",
+              canvas.width / 2,
+              linkY + 40
+            );
+
+            // Store the fundamentally-me link area for click detection
+            this.fundamentallyMeLinkArea = {
+              x: canvas.width / 2 - 350,
+              y: linkY + 40 - 30,
+              width: 700,
+              height: 60,
+            };
+          } else {
+            ctx.fillText(
+              "To know more details please visit:",
+              canvas.width / 2,
+              linkY
+            );
+            // Blue link on next line for PC too
+            ctx.fillStyle = "#0066cc";
+            ctx.font = `bold ${linkSize}px Arial`;
+            ctx.fillText(
+              "https://efitacademy.ca/fundamentally-me-7-pillars-of-self/",
+              canvas.width / 2,
+              linkY + 60
+            );
+
+            // Store the fundamentally-me link area for click detection
+            this.fundamentallyMeLinkArea = {
+              x: canvas.width / 2 - 400,
+              y: linkY + 60 - 30,
+              width: 800,
+              height: 60,
+            };
+          }
+
+          // Second clickable link - booking
+          const bookingY = isMobile ? 900 : 975;
+          ctx.fillText(
+            "Book a session: https://efitacademy.ca/booking/",
+            canvas.width / 2,
+            bookingY
+          );
+
+          // Store the booking link area for click detection
+          this.bookingLinkArea = {
+            x: canvas.width / 2 - 300,
+            y: bookingY - 30,
+            width: 600,
+            height: 60,
+          };
+
+          ctx.fillStyle = "black"; // Reset color
+          ctx.font = `${instructionSize}px Arial`;
+          const instructionY = isMobile ? 975 : 1050;
+          if (isMobile) {
+            ctx.fillText(
+              "Tap links above or tap elsewhere to return to menu",
+              canvas.width / 2,
+              instructionY
+            );
+          } else {
+            ctx.fillText(
+              "Click links above or click elsewhere to return to menu",
+              canvas.width / 2,
+              instructionY
+            );
+          }
+        }
+
+        handleClick(x, y) {
+          // Check if click is on fundamentally-me link
+          if (
+            this.fundamentallyMeLinkArea &&
+            x >= this.fundamentallyMeLinkArea.x &&
+            x <=
+              this.fundamentallyMeLinkArea.x +
+                this.fundamentallyMeLinkArea.width &&
+            y >= this.fundamentallyMeLinkArea.y &&
+            y <=
+              this.fundamentallyMeLinkArea.y +
+                this.fundamentallyMeLinkArea.height
+          ) {
+            // Open fundamentally-me link
+            window.open(
+              "https://efitacademy.ca/fundamentally-me-7-pillars-of-self/",
+              "_blank"
+            );
+          } else if (
+            this.bookingLinkArea &&
+            x >= this.bookingLinkArea.x &&
+            x <= this.bookingLinkArea.x + this.bookingLinkArea.width &&
+            y >= this.bookingLinkArea.y &&
+            y <= this.bookingLinkArea.y + this.bookingLinkArea.height
+          ) {
+            // Open booking link
+            window.open("https://efitacademy.ca/booking/", "_blank");
+          } else {
+            // Return to menu for any other click
+            this.game.changeScene("MENU", new Scene_Menu(this.game));
+          }
+        }
+
+        handleAction(command) {
+          if (command.getType() === "START" && command.getName() === "QUIT") {
+            this.onEnd();
+          }
+        }
+
+        onEnd() {
+          console.log("Exiting game");
+        }
+      }
+
+      // Main Game Engine
+      class GameEngine {
+        constructor() {
+          this.canvas = document.getElementById("gameCanvas");
+          this.ctx = this.canvas.getContext("2d");
+          this.running = true;
+          this.currentScene = "";
+          this.sceneMap = new Map();
+          this.simulationSpeed = 1;
+          this.imageManager = new ImageManager();
+
+          this.initializeGame();
+        }
+
+        async initializeGame() {
+          // Load all images first
+          await this.imageManager.loadAllImages();
+
+          // Set up canvas
+          this.resizeCanvas();
+          window.addEventListener("resize", () => this.resizeCanvas());
+          window.addEventListener("orientationchange", () =>
+            this.resizeCanvas()
+          );
+
+          // Event listeners
+          this.setupEventListeners();
+
+          // Start with menu scene
+          this.changeScene("MENU", new Scene_Menu(this));
+
+          // Hide loading
+          document.getElementById("loading").style.display = "none";
+
+          // Start game loop
+          this.lastTime = 0;
+          this.gameLoop();
+        }
+
+        resizeCanvas() {
+          const aspectRatio = 1920 / 1080; // 16:9 aspect ratio
+          const isMobile = window.innerWidth <= 768;
+
+          // Always maintain aspect ratio, even on mobile
+          if (window.innerWidth / window.innerHeight > aspectRatio) {
+            // Window is wider than 16:9, fit to height
+            this.canvas.style.height =
+              Math.min(window.innerHeight * 0.95, 1080) + "px";
+            this.canvas.style.width =
+              parseFloat(this.canvas.style.height) * aspectRatio + "px";
+          } else {
+            // Window is taller than 16:9, fit to width
+            this.canvas.style.width =
+              Math.min(window.innerWidth * 0.95, 1920) + "px";
+            this.canvas.style.height =
+              parseFloat(this.canvas.style.width) / aspectRatio + "px";
+          }
+
+          // Center the canvas
+          this.canvas.style.position = "static";
+
+          // Calculate scaling factors for input handling
+          // this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
+          // this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
+          const rect = this.canvas.getBoundingClientRect();
+          this.scaleX = this.canvas.width / rect.width;
+          this.scaleY = this.canvas.height / rect.height;
+        }
+
+        setupEventListeners() {
+          document.addEventListener("keydown", (e) => {
+            this.handleKeyDown(e);
+          });
+
+          this.canvas.addEventListener("click", (e) => {
+            this.handleMouseClick(e);
+          });
+
+          this.canvas.addEventListener("touchstart", (e) => {
+            e.preventDefault();
+            this.handleTouch(e);
+          });
+
+          this.canvas.addEventListener("touchend", (e) => {
+            e.preventDefault();
+          });
+
+          this.canvas.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+          });
+
+          this.canvas.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+          });
+        }
+
+        handleKeyDown(e) {
+          const scene = this.getCurrentScene();
+          if (scene) {
+            const actionMap = scene.getActionMap();
+            if (actionMap.has(e.key)) {
+              const command = new Command(actionMap.get(e.key), "START");
+              scene.handleAction(command);
+            }
+
+            if (typeof scene.handleKeyPress === "function") {
+              scene.handleKeyPress(e);
+            }
+          }
+        }
+
+        handleMouseClick(e) {
+          const rect = this.canvas.getBoundingClientRect();
+          const x = (e.clientX - rect.left) * this.scaleX;
+          const y = (e.clientY - rect.top) * this.scaleY;
+
+          const scene = this.getCurrentScene();
+          if (scene && scene.handleClick) {
+            scene.handleClick(x, y);
+          }
+        }
+
+        handleTouch(e) {
+          if (e.touches.length > 0) {
+            const rect = this.canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = (touch.clientX - rect.left) * this.scaleX;
+            const y = (touch.clientY - rect.top) * this.scaleY;
+
+            const scene = this.getCurrentScene();
+            if (scene && scene.handleClick) {
+              scene.handleClick(x, y);
+            }
+          }
+        }
+
+        getCurrentScene() {
+          return this.sceneMap.get(this.currentScene);
+        }
+
+        changeScene(sceneName, scene, endCurrentScene = false) {
+          if (endCurrentScene) {
+            this.sceneMap.delete(this.currentScene);
+          }
+
+          // Always create fresh instances for these scenes
+          if (
+            sceneName === "PLAY" ||
+            sceneName === "END" ||
+            sceneName === "REFLECTION" ||
+            sceneName === "SCALE"
+          ) {
+            this.sceneMap.set(sceneName, scene);
+          } else if (!this.sceneMap.has(sceneName)) {
+            this.sceneMap.set(sceneName, scene);
+          }
+
+          this.currentScene = sceneName;
+        }
+
+        gameLoop(currentTime = 0) {
+          if (!this.running) return;
+
+          const deltaTime = (currentTime - this.lastTime) / 1000;
+          this.lastTime = currentTime;
+
+          const scene = this.getCurrentScene();
+          if (scene) {
+            scene.update(deltaTime);
+            scene.render(this.ctx);
+          }
+
+          requestAnimationFrame((time) => this.gameLoop(time));
+        }
+
+        isRunning() {
+          return this.running;
+        }
+
+        quit() {
+          this.running = false;
+          console.log("Game quit");
+        }
+      }
+
+      // Start the game when page loads
+      window.addEventListener("load", () => {
+        new GameEngine();
+      });
     </script>
-</body>
-
+  </body>
 </html>
