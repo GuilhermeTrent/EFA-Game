@@ -783,10 +783,10 @@
             // Question number and text
             ctx.textAlign = "left";
             const questionX = isMobile ? 20 : 50;
-            const questionMaxWidth = isMobile ? 650 : 700;
+            const questionMaxWidth = isMobile ? 700 : 700;
 
             // Use wrapText for longer questions
-            const lineHeight = isMobile ? 60 : 26;
+            const lineHeight = isMobile ? 45 : 26;
             this.wrapText(
               ctx,
               `${i + 1}. ${questions[i]}`,
