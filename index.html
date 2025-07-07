@@ -80,7 +80,8 @@
   <body>
     <div class="loading" id="loading">Loading...</div>
     <canvas id="gameCanvas" width="1920" height="1080"></canvas>
-
+    <input id="hiddenInput" type="number" inputmode="numeric" min="0" max="20" style="position: absolute; opacity: 0; pointer-events: none;">
+  
     <script>
       // Image Manager Class
       class ImageManager {
@@ -713,7 +714,7 @@
           ctx.fillRect(0, 0, canvas.width, canvas.height);
 
           const titleSize = isMobile ? 40 : 50;
-          const questionSize = isMobile ? 40 : 30;
+          const questionSize = isMobile ? 30 : 30;
           const headerSize = isMobile ? 28 : 32;
           const instructionSize = isMobile ? 20 : 24;
 
@@ -927,6 +928,37 @@
               y <= box.y + box.height
             ) {
               this.activeInput = { type: box.type, index: box.index };
+
+              const input = document.getElementById("hiddenInput");
+              const rect = this.game.canvas.getBoundingClientRect();
+              const scaleX = this.game.scaleX;
+              const scaleY = this.game.scaleY;
+
+              input.style.left = `${rect.left + box.x / scaleX}px`;
+              input.style.top = `${rect.top + box.y / scaleY}px`;
+              input.style.width = `${box.width / scaleX}px`;
+              input.style.height = `${box.height / scaleY}px`;
+              input.style.opacity = 1;
+              input.style.pointerEvents = 'auto';
+              input.value = '';
+
+              input.focus();
+
+              input.oninput = () => {
+                const value = parseInt(input.value);
+                if(!isNaN(value) && value >= 0 && value <= 20) {
+                  this.presentScores[box.index] = value;
+                } else {
+                  this.targetScores[box.index] = value;
+                }
+              };
+
+              input.onblur = () => {
+                input.style.opacity = 0;
+                input.style.pointerEvents = 'none';
+                this.activeInput = null;
+              };
+              
               return;
             }
           }
