@@ -554,45 +554,46 @@
         this.setupInputBoxes();
     }
 
-    setupInputBoxes() {
-        const isMobile = window.innerWidth <= 768;
-        const canvas = this.game.canvas;
-        const startY = isMobile ? 300 : 400;
-        const rowHeight = isMobile ? 80 : 90; // Increased for better spacing with longer questions
-        const boxWidth = isMobile ? 60 : 80;
-        const boxHeight = isMobile ? 40 : 50;
+   setupInputBoxes() {
+    const isMobile = window.innerWidth <= 768;
+    const canvas = this.game.canvas;
+    const startY = isMobile ? 260 : 300;  // Same as question startY
+    const rowHeight = isMobile ? 80 : 90;
+    const boxWidth = isMobile ? 80 : 100;
+    const boxHeight = isMobile ? 50 : 60;
 
-        // Present score column X position
-        const presentX = canvas.width / 2 - (isMobile ? 80 : 100);
-        // Target score column X position  
-        const targetX = canvas.width / 2 + (isMobile ? 100 : 120);
+    // Present score column X position
+    const presentX = canvas.width / 2 - (isMobile ? 100 : 130);
+    // Target score column X position  
+    const targetX = canvas.width / 2 + (isMobile ? 120 : 150);
 
-        this.inputBoxes = [];
+    this.inputBoxes = [];
 
-        for (let i = 0; i < 5; i++) { // Changed to 5 questions
-            const y = startY + (i * rowHeight);
+    for (let i = 0; i < 5; i++) {
+        // FIXED: Align input boxes with question text by adjusting Y position
+        const y = startY + (i * rowHeight) + 10; // Added +10 to align with question text
 
-            // Present score input box
-            this.inputBoxes.push({
-                type: 'present',
-                index: i,
-                x: presentX,
-                y: y,
-                width: boxWidth,
-                height: boxHeight
-            });
+        // Present score input box
+        this.inputBoxes.push({
+            type: 'present',
+            index: i,
+            x: presentX,
+            y: y,
+            width: boxWidth,
+            height: boxHeight
+        });
 
-            // Target score input box
-            this.inputBoxes.push({
-                type: 'target',
-                index: i,
-                x: targetX,
-                y: y,
-                width: boxWidth,
-                height: boxHeight
-            });
-        }
+        // Target score input box
+        this.inputBoxes.push({
+            type: 'target',
+            index: i,
+            x: targetX,
+            y: y,
+            width: boxWidth,
+            height: boxHeight
+        });
     }
+}
 
     registerActions() {
         this.registerAction('Enter', 'CONTINUE');
@@ -639,127 +640,150 @@
     }
 
     render(ctx) {
-        const canvas = ctx.canvas;
-        const isMobile = window.innerWidth <= 768;
+    const canvas = ctx.canvas;
+    const isMobile = window.innerWidth <= 768;
 
-        // Background
-        ctx.fillStyle = '#f5f5f5';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Background
+    ctx.fillStyle = '#f5f5f5';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const titleSize = isMobile ? 40 : 50; // Slightly smaller to fit more content
-        const questionSize = isMobile ? 20 : 24; // Smaller for longer questions
-        const headerSize = isMobile ? 28 : 32;
-        const instructionSize = isMobile ? 20 : 24;
+    const titleSize = isMobile ? 40 : 50;
+    const questionSize = isMobile ? 20 : 24;
+    const headerSize = isMobile ? 28 : 32;
+    const instructionSize = isMobile ? 18 : 22;
 
-        // Title
-        ctx.fillStyle = '#2c3e50';
-        ctx.font = `bold ${titleSize}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.fillText('Self-Assessment Scale', canvas.width / 2, isMobile ? 60 : 80);
+    // Title
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = `bold ${titleSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Self-Assessment Scale', canvas.width / 2, isMobile ? 60 : 80);
 
-        // Column headers
-        ctx.font = `bold ${headerSize}px Arial`;
-        ctx.fillStyle = '#34495e';
+    // TOP-RIGHT INSTRUCTIONS - Fixed positioning
+    ctx.font = `${instructionSize}px Arial`;
+    ctx.fillStyle = '#7f8c8d';
+    ctx.textAlign = 'right';
+    const instructionText = [
+        '0-4 = Poor',
+        '5-8 = Fair', 
+        '9-12 = Good',
+        '13-16 = Very Good',
+        '17-20 = Excellent'
+    ];
+    const rightX = canvas.width - (isMobile ? 20 : 40);
+    let instructionY = isMobile ? 120 : 140;
+    for (let instruction of instructionText) {
+        ctx.fillText(instruction, rightX, instructionY);
+        instructionY += isMobile ? 22 : 26;
+    }
 
-        const headerY = isMobile ? 180 : 220;
-        const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 200);
-        const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 200);
+    // Column headers
+    ctx.font = `bold ${headerSize}px Arial`;
+    ctx.fillStyle = '#34495e';
 
-        ctx.textAlign = 'center';
-        ctx.fillText('Present Score', presentHeaderX, headerY);
-        ctx.fillText('Target Score', targetHeaderX, headerY);
+    const headerY = isMobile ? 180 : 220;
+    const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 200);
+    const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 200);
 
-        // Scale instruction
-        ctx.font = `${instructionSize}px Arial`;
-        ctx.fillStyle = '#7f8c8d';
-        ctx.fillText('Scale 0 - 20', canvas.width / 2, headerY + 30);
+    ctx.textAlign = 'center';
+    ctx.fillText('Present Score', presentHeaderX, headerY);
+    ctx.fillText('Target Score', targetHeaderX, headerY);
 
-        // Questions and input boxes
-        ctx.font = `${questionSize}px Arial`;
-        ctx.fillStyle = '#2c3e50';
+    // Scale instruction (moved to center, smaller)
+    ctx.font = `${instructionSize}px Arial`;
+    ctx.fillStyle = '#7f8c8d';
+    ctx.fillText('Scale 0 - 20', canvas.width / 2, headerY + 30);
 
-        const startY = isMobile ? 260 : 300;
-        const rowHeight = isMobile ? 80 : 90;
-        const questions = this.scaleQuestions[this.pillarIndex];
+    // Questions and input boxes
+    ctx.font = `${questionSize}px Arial`;
+    ctx.fillStyle = '#2c3e50';
 
-        for (let i = 0; i < 5; i++) { // Changed to 5 questions
-            const y = startY + (i * rowHeight);
+    const startY = isMobile ? 260 : 300;
+    const rowHeight = isMobile ? 80 : 90;
+    const questions = this.scaleQuestions[this.pillarIndex];
 
-            // Question number and text
-            ctx.textAlign = 'left';
-            const questionX = isMobile ? 20 : 50;
-            const questionMaxWidth = isMobile ? 300 : 400;
-            
-            // Use wrapText for longer questions
-            const lineHeight = isMobile ? 22 : 26;
-            this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
+    for (let i = 0; i < 5; i++) {
+        const y = startY + (i * rowHeight);
 
-            // Draw input boxes
-            for (let box of this.inputBoxes) {
-                if (box.index === i) {
-                    // Box background
-                    ctx.fillStyle = this.activeInput &&
-                        this.activeInput.type === box.type &&
-                        this.activeInput.index === box.index ? '#e3f2fd' : 'white';
-                    ctx.fillRect(box.x, box.y, box.width, box.height);
+        // Question number and text
+        ctx.textAlign = 'left';
+        const questionX = isMobile ? 20 : 50;
+        const questionMaxWidth = isMobile ? 300 : 400;
+        
+        const lineHeight = isMobile ? 22 : 26;
+        this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
 
-                    // Box border
-                    ctx.strokeStyle = this.activeInput &&
-                        this.activeInput.type === box.type &&
-                        this.activeInput.index === box.index ? '#2196f3' : '#ccc';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(box.x, box.y, box.width, box.height);
+        // Draw input boxes
+        for (let box of this.inputBoxes) {
+            if (box.index === i) {
+                // Box background
+                ctx.fillStyle = this.activeInput &&
+                    this.activeInput.type === box.type &&
+                    this.activeInput.index === box.index ? '#e3f2fd' : 'white';
+                ctx.fillRect(box.x, box.y, box.width, box.height);
 
-                    // Value text
-                    ctx.fillStyle = '#2c3e50';
-                    ctx.textAlign = 'center';
-                    const value = box.type === 'present' ? this.presentScores[i] : this.targetScores[i];
-                    if (value > 0) {
-                        ctx.fillText(value.toString(), box.x + box.width / 2, box.y + box.height / 2 + 8);
-                    }
+                // Box border
+                ctx.strokeStyle = this.activeInput &&
+                    this.activeInput.type === box.type &&
+                    this.activeInput.index === box.index ? '#2196f3' : '#ccc';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+                // Value text
+                ctx.fillStyle = '#2c3e50';
+                ctx.font = `${questionSize}px Arial`;
+                ctx.textAlign = 'center';
+                const value = box.type === 'present' ? this.presentScores[i] : this.targetScores[i];
+                if (value > 0) {
+                    ctx.fillText(value.toString(), box.x + box.width / 2, box.y + box.height / 2 + 8);
                 }
             }
         }
-
-        // Total scores
-        const totalY = startY + (5 * rowHeight) + 40; // Changed to 5 questions
-
-        // Draw "TOTAL SCORES" label ABOVE the numbers
-        ctx.font = `${instructionSize}px Arial`;
-        ctx.fillStyle = '#7f8c8d';
-        ctx.textAlign = 'center';
-        ctx.fillText('TOTAL SCORES', canvas.width / 2, totalY);
-
-        ctx.font = `bold ${headerSize}px Arial`;
-        ctx.fillStyle = '#2c3e50';
-        ctx.textAlign = 'center';
-
-        const presentTotal = this.presentScores.reduce((a, b) => a + b, 0);
-        const targetTotal = this.targetScores.reduce((a, b) => a + b, 0);
-
-        ctx.fillText(`${presentTotal}`, presentHeaderX, totalY + 40);
-        ctx.fillText(`${targetTotal}`, targetHeaderX, totalY + 40);
-
-        // Validation message if not all fields are filled
-        if (!this.validateAllFieldsFilled()) {
-            ctx.font = `bold ${instructionSize}px Arial`;
-            ctx.fillStyle = '#e74c3c'; // Red color for validation message
-            ctx.textAlign = 'center';
-            ctx.fillText('Please fill all fields before continuing', canvas.width / 2, totalY + 80);
-        }
-
-        // Notes instruction
-        const notesY = totalY + (this.validateAllFieldsFilled() ? 80 : 120);
-        ctx.font = `${instructionSize}px Arial`;
-        ctx.fillStyle = '#7f8c8d';
-        ctx.textAlign = 'center';
-        ctx.fillText('Take some notes on your feelings and thoughts about these scores', canvas.width / 2, notesY);
-
-        // Continue instruction
-        const continueY = canvas.height - (isMobile ? 60 : 80);
-        ctx.fillStyle = this.validateAllFieldsFilled() ? '#7f8c8d' : '#bdc3c7'; // Dimmed if validation fails
-        ctx.fillText(isMobile ? 'Tap to continue' : 'Click anywhere or press Enter to continue', canvas.width / 2, continueY);
     }
+
+    // FIXED: Total scores positioning
+    const totalY = startY + (5 * rowHeight) + 40;
+
+    // Calculate totals
+    const presentTotal = this.presentScores.reduce((a, b) => a + b, 0);
+    const targetTotal = this.targetScores.reduce((a, b) => a + b, 0);
+
+    // Draw "TOTAL SCORES" label ABOVE the actual total numbers
+    ctx.font = `${instructionSize}px Arial`;
+    ctx.fillStyle = '#7f8c8d';
+    ctx.textAlign = 'center';
+    ctx.fillText('TOTAL SCORES', canvas.width / 2, totalY - 20);
+
+    // Draw the actual total numbers below the label
+    ctx.font = `bold ${headerSize}px Arial`;
+    ctx.fillStyle = '#2c3e50';
+    ctx.textAlign = 'center';
+    // ctx.fillText(`${presentTotal}`, presentHeaderX, totalY);
+    // ctx.fillText(`${targetTotal}`, targetHeaderX, totalY);
+
+    const presentX = canvas.width / 2 - (isMobile ? 100 : 130);
+const targetX = canvas.width / 2 + (isMobile ? 120 : 150);
+ctx.fillText(`${presentTotal}`, presentX + (isMobile ? 40 : 50), totalY +10);
+ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
+    // Validation message
+    if (!this.validateAllFieldsFilled()) {
+        ctx.font = `bold ${instructionSize}px Arial`;
+        ctx.fillStyle = '#e74c3c';
+        ctx.textAlign = 'center';
+        ctx.fillText('Please fill all fields before continuing', canvas.width / 2, totalY + 50);
+    }
+
+    // Notes instruction
+    const notesY = totalY + (this.validateAllFieldsFilled() ? 90 : 110);
+    ctx.font = `${instructionSize}px Arial`;
+    ctx.fillStyle = '#7f8c8d';
+    ctx.textAlign = 'center';
+    ctx.fillText('Take some notes on your feelings and thoughts about these scores', canvas.width / 2, notesY);
+
+    // Continue instruction
+    const continueY = canvas.height - (isMobile ? 60 : 80);
+    ctx.fillStyle = this.validateAllFieldsFilled() ? '#7f8c8d' : '#bdc3c7';
+    ctx.fillText(isMobile ? 'Tap to continue' : 'Click anywhere or press Enter to continue', canvas.width / 2, continueY);
+}
 
     handleClick(x, y) {
         // Check if click is on an input box
