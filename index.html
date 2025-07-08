@@ -804,7 +804,78 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
             alert('Please fill all present and target scores before continuing.');
         }
     }
+    showNumberInput(box) {
+    const currentValue = box.type === 'present' ?
+        this.presentScores[box.index] : this.targetScores[box.index];
 
+    // Create a number input instead of text prompt
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.max = '20';
+    input.step = '1';
+    input.value = currentValue || '';
+    input.style.position = 'fixed';
+    input.style.left = '50%';
+    input.style.top = '50%';
+    input.style.transform = 'translate(-50%, -50%)';
+    input.style.zIndex = '9999';
+    input.style.padding = '10px';
+    input.style.fontSize = '20px';
+    input.style.border = '2px solid #2196f3';
+    input.style.borderRadius = '5px';
+    input.style.textAlign = 'center';
+    input.style.width = '100px';
+
+    // Add backdrop
+    const backdrop = document.createElement('div');
+    backdrop.style.position = 'fixed';
+    backdrop.style.top = '0';
+    backdrop.style.left = '0';
+    backdrop.style.width = '100%';
+    backdrop.style.height = '100%';
+    backdrop.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    backdrop.style.zIndex = '9998';
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(input);
+    
+    input.focus();
+    input.select();
+
+    const cleanup = () => {
+        document.body.removeChild(input);
+        document.body.removeChild(backdrop);
+        this.activeInput = null;
+    };
+
+    const saveValue = () => {
+        const value = parseInt(input.value);
+        if (!isNaN(value) && value >= 0 && value <= 20) {
+            if (box.type === 'present') {
+                this.presentScores[box.index] = value;
+            } else {
+                this.targetScores[box.index] = value;
+            }
+            cleanup();
+        } else {
+            alert('Please enter a valid number between 0 and 20.');
+            input.focus();
+        }
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            saveValue();
+        } else if (e.key === 'Escape') {
+            cleanup();
+        }
+    });
+
+    input.addEventListener('blur', saveValue);
+    backdrop.addEventListener('click', cleanup);
+}
+/*
     showNumberInput(box) {
         const currentValue = box.type === 'present' ?
             this.presentScores[box.index] : this.targetScores[box.index];
@@ -826,7 +897,7 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
 
         this.activeInput = null;
     }
-
+*/
     continue() {
         // Double-check validation before proceeding
         if (this.validateAllFieldsFilled()) {
