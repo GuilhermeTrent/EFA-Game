@@ -1339,144 +1339,158 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
             }
 
             render(ctx) {
-                const canvas = ctx.canvas;
-                const isMobile = window.innerWidth <= 768;
+    const canvas = ctx.canvas;
+    const isMobile = window.innerWidth <= 768;
 
-                ctx.fillStyle = '#549aa3';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#549aa3';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                const titleSize = isMobile ? 80 : 100;
-                const subtitleSize = isMobile ? 45 : 60;
-                const footerSize = isMobile ? 40 : 50;
-                const linkSize = isMobile ? 32 : 30;
-                const instructionSize = isMobile ? 28 : 30;
+    const titleSize = isMobile ? 80 : 100;
+    const subtitleSize = isMobile ? 45 : 60;
+    const footerSize = isMobile ? 40 : 50;
+    const linkSize = isMobile ? 28 : 30; // Slightly smaller on mobile
+    const instructionSize = isMobile ? 24 : 30; // Smaller on mobile
 
-                ctx.fillStyle = 'black';
-                ctx.font = `bold ${titleSize}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 100 : 120);
+    ctx.fillStyle = 'black';
+    ctx.font = `bold ${titleSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.fillText('Congratulations!', canvas.width / 2, isMobile ? 100 : 120);
 
-                ctx.font = `${subtitleSize}px Arial`;
-                const subtitleY = isMobile ? 180 : 230;
-                if (isMobile) {
-                    ctx.fillText('You have discovered', canvas.width / 2, subtitleY);
-                    ctx.fillText('all 7 Pillars of Self!', canvas.width / 2, subtitleY + 50);
-                } else {
-                    ctx.fillText('You have discovered all 7 Pillars of Self!', canvas.width / 2, subtitleY);
-                }
+    ctx.font = `${subtitleSize}px Arial`;
+    const subtitleY = isMobile ? 180 : 230;
+    if (isMobile) {
+        ctx.fillText('You have discovered', canvas.width / 2, subtitleY);
+        ctx.fillText('all 7 Pillars of Self!', canvas.width / 2, subtitleY + 50);
+    } else {
+        ctx.fillText('You have discovered all 7 Pillars of Self!', canvas.width / 2, subtitleY);
+    }
 
-                // Draw icons in a circle
-                const iconKeys = [
-                    'heart2', 'trophy', 'money', 'ring', 'brain', 'plant', 'spiritual'
-                ];
+    // Draw icons in a circle
+    const iconKeys = [
+        'heart2', 'trophy', 'money', 'ring', 'brain', 'plant', 'spiritual'
+    ];
 
-                const centerX = canvas.width / 2;
-                const centerY = isMobile ? 450 : 515;
-                const radius = isMobile ? 120 : 180;
-                const iconSize = isMobile ? 60 : 80;
+    const centerX = canvas.width / 2;
+    const centerY = isMobile ? 450 : 515;
+    const radius = isMobile ? 120 : 180;
+    const iconSize = isMobile ? 60 : 80;
 
-                for (let i = 0; i < iconKeys.length; i++) {
-                    const angle = (i / iconKeys.length) * 2 * Math.PI;
-                    const x = centerX + radius * Math.cos(angle);
-                    const y = centerY + radius * Math.sin(angle);
+    for (let i = 0; i < iconKeys.length; i++) {
+        const angle = (i / iconKeys.length) * 2 * Math.PI;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
 
-                    const img = this.imageManager.getImage(iconKeys[i]);
-                    console.log(`Drawing icon: ${iconKeys[i]}`, img);
-                    if (img) {
-                        ctx.drawImage(img, x - iconSize / 2, y - iconSize / 2, iconSize, iconSize);
-                    }
-                }
+        const img = this.imageManager.getImage(iconKeys[i]);
+        console.log(`Drawing icon: ${iconKeys[i]}`, img);
+        if (img) {
+            ctx.drawImage(img, x - iconSize / 2, y - iconSize / 2, iconSize, iconSize);
+        }
+    }
 
-                const centralIcon = this.imageManager.getImage('meditate');
-                const centralSize = isMobile ? 80 : 100;
-                if (centralIcon) {
-                    ctx.drawImage(
-                        centralIcon,
-                        centerX - centralSize / 2,
-                        centerY - centralSize / 2,
-                        centralSize,
-                        centralSize
-                    );
-                }
+    const centralIcon = this.imageManager.getImage('meditate');
+    const centralSize = isMobile ? 80 : 100;
+    if (centralIcon) {
+        ctx.drawImage(
+            centralIcon,
+            centerX - centralSize / 2,
+            centerY - centralSize / 2,
+            centralSize,
+            centralSize
+        );
+    }
 
-                ctx.font = `${footerSize}px Arial`;
-                const footerY = isMobile ? 650 : 775;
-                if (isMobile) {
-                    ctx.fillText('Keep growing with', canvas.width / 2, footerY);
-                    ctx.fillText('Emotional Fitness Academy', canvas.width / 2, footerY + 50);
-                } else {
-                    ctx.fillText('Keep growing with Emotional Fitness Academy', canvas.width / 2, footerY);
-                }
+    ctx.font = `${footerSize}px Arial`;
+    const footerY = isMobile ? 650 : 775;
+    if (isMobile) {
+        ctx.fillText('Keep growing with', canvas.width / 2, footerY);
+        ctx.fillText('Emotional Fitness Academy', canvas.width / 2, footerY + 50);
+    } else {
+        ctx.fillText('Keep growing with Emotional Fitness Academy', canvas.width / 2, footerY);
+    }
 
+    ctx.font = `${linkSize}px Arial`;
+    const linkY = isMobile ? 780 : 850; // Moved up on mobile
+    
+    // First clickable link - fundamentally-me
+    ctx.fillStyle = '#0066cc'; // Blue color for link
+    ctx.font = `bold ${linkSize}px Arial`;
+    if (isMobile) {
+        ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
+        ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 35);
 
+        // Store the fundamentally-me link area for click detection
+        this.fundamentallyMeLinkArea = {
+            x: canvas.width / 2 - 350,
+            y: linkY + 35 - 30,
+            width: 700,
+            height: 60
+        };
+    } else {
+        ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
+        // Blue link on next line for PC too
+        ctx.fillStyle = '#0066cc';
+        ctx.font = `bold ${linkSize}px Arial`;
+        ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 40);
 
-                ctx.font = `${linkSize}px Arial`;
-                const linkY = isMobile ? 800 : 850;
-                // First clickable link - fundamentally-me
-                ctx.fillStyle = '#0066cc'; // Blue color for link
-                ctx.font = `bold ${linkSize}px Arial`;
-                if (isMobile) {
-                    ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
-                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 40);
+        // Store the fundamentally-me link area for click detection
+        this.fundamentallyMeLinkArea = {
+            x: canvas.width / 2 - 400,
+            y: linkY + 40 - 30,
+            width: 800,
+            height: 60
+        };
+    }
 
-                    // Store the fundamentally-me link area for click detection
-                    this.fundamentallyMeLinkArea = {
-                        x: canvas.width / 2 - 350,
-                        y: linkY + 40 - 30,
-                        width: 700,
-                        height: 60
-                    };
-                } else {
-                    ctx.fillText('To know more details please visit:', canvas.width / 2, linkY);
-                    // Blue link on next line for PC too
-                    ctx.fillStyle = '#0066cc';
-                    ctx.font = `bold ${linkSize}px Arial`;
-                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 40);
+    // Second clickable link - booking
+    const bookingY = isMobile ? 860 : 945; // Adjusted for mobile
+    ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
 
-                    // Store the fundamentally-me link area for click detection
-                    this.fundamentallyMeLinkArea = {
-                        x: canvas.width / 2 - 400,
-                        y: linkY + 40 - 30,
-                        width: 800,
-                        height: 60
-                    };
-                }
+    // Store the booking link area for click detection
+    this.bookingLinkArea = {
+        x: canvas.width / 2 - 400,
+        y: bookingY - 30,
+        width: 800,
+        height: 60
+    };
 
-                // Second clickable link - booking
-                const bookingY = isMobile ? 900 : 945;
-                ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
+    // Third clickable link - YouTube
+    const youtubeY = isMobile ? 920 : 988; // Adjusted for mobile
+    ctx.fillStyle = '#cc0000'; 
+    ctx.font = `bold ${linkSize}px Arial`;
+    
+    if (isMobile) {
+        // Split YouTube link into two lines on mobile
+        ctx.fillText('Watch us on YouTube:', canvas.width / 2, youtubeY);
+        ctx.fillText('https://www.youtube.com/@emotionalfitnessacademy9087', canvas.width / 2, youtubeY + 35);
+        
+        // Store clickable area for both lines
+        this.youtubeLinkArea = {
+            x: canvas.width / 2 - 400,
+            y: youtubeY - 30,
+            width: 800,
+            height: 80 // Increased height to cover both lines
+        };
+    } else {
+        ctx.fillText('Watch us on YouTube: https://www.youtube.com/@emotionalfitnessacademy9087', canvas.width / 2, youtubeY);
+        
+        // Store clickable area
+        this.youtubeLinkArea = {
+            x: canvas.width / 2 - 400,
+            y: youtubeY - 30,
+            width: 800,
+            height: 60
+        };
+    }
 
-                // Store the booking link area for click detection
-                this.bookingLinkArea = {
-                    x: canvas.width / 2 - 400,
-                    y: bookingY - 30,
-                    width: 800,
-                    height: 60
-                };
-
-                // Third clickable link - YouTube
-                const youtubeY = isMobile ? 980 : 988;
-                ctx.fillStyle = '#cc0000'; 
-                ctx.font = `bold ${linkSize}px Arial`;
-                ctx.fillText('Watch us on YouTube: https://www.youtube.com/@emotionalfitnessacademy9087', canvas.width / 2, youtubeY);
-
-                // Store clickable area
-                this.youtubeLinkArea = {
-                    x: canvas.width / 2 - 400,
-                    y: youtubeY - 30,
-                    width: 800,
-                    height: 60
-                };
-
-                ctx.fillStyle = 'black'; 
-                ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 975 : 1050;
-                if (isMobile) {
-                    ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
-                } else {
-                    ctx.fillText('Click links above or click elsewhere to return to menu', canvas.width / 2, instructionY);
-                }
-            }
+    ctx.fillStyle = 'black'; 
+    ctx.font = `${instructionSize}px Arial`;
+    const instructionY = isMobile ? 1000 : 1050; // Moved down on mobile to avoid overlap
+    if (isMobile) {
+        ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
+    } else {
+        ctx.fillText('Click links above or click elsewhere to return to menu', canvas.width / 2, instructionY);
+    }
+}
 
             handleClick(x, y) {
 
