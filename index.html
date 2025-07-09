@@ -256,15 +256,15 @@
             }
 
             update(dt) {
-                // Override in subclasses
+                
             }
 
             render(ctx) {
-                // Override in subclasses
+                
             }
 
             handleAction(command) {
-                // Override in subclasses
+                
             }
 
             registerAction(key, action) {
@@ -276,7 +276,7 @@
             }
 
             onEnd() {
-                // Override in subclasses
+                
             }
         }
 
@@ -359,7 +359,7 @@
             constructor(gameEngine, message, reflectionImageType, onContinueCallback) {
                 super(gameEngine);
                 this.message = message;
-                this.reflectionImageType = reflectionImageType; // Changed from pillarImageType
+                this.reflectionImageType = reflectionImageType;
                 this.onContinueCallback = onContinueCallback;
                 this.registerActions();
             }
@@ -480,13 +480,18 @@
         }
 
       class Scene_Scale extends Scene {
+
+        static isMobileDevice() {
+            return /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+        }
+
     constructor(gameEngine, pillarIndex, onContinueCallback) {
         super(gameEngine);
         this.pillarIndex = pillarIndex;
         this.onContinueCallback = onContinueCallback;
         this.registerActions();
 
-        // Scale questions for each pillar - using the detailed questions from the document
+        // Scale questions for each pillar
         this.scaleQuestions = [
             // Emotional Pillar
             [
@@ -546,19 +551,20 @@
             ]
         ];
 
-        // Input values - present and target scores (changed to 5 questions)
+        // Input values 
         this.presentScores = [0, 0, 0, 0, 0];
         this.targetScores = [0, 0, 0, 0, 0];
-        this.activeInput = null; // {type: 'present'|'target', index: number}
+        this.activeInput = null; 
         this.inputBoxes = [];
         this.setupInputBoxes();
     }
 
+
    setupInputBoxes() {
     const isMobile = window.innerWidth <= 768;
     const canvas = this.game.canvas;
-    const startY = isMobile ? 260 : 300;  // Same as question startY
-    const rowHeight = isMobile ? 80 : 90;
+    const startY = isMobile ? 260 : 300; 
+    const rowHeight = isMobile ? 80 : 105;
     const boxWidth = isMobile ? 80 : 100;
     const boxHeight = isMobile ? 50 : 60;
 
@@ -570,8 +576,8 @@
     this.inputBoxes = [];
 
     for (let i = 0; i < 5; i++) {
-        // FIXED: Align input boxes with question text by adjusting Y position
-        const y = startY + (i * rowHeight) + 10; // Added +10 to align with question text
+        
+        const y = startY + (i * rowHeight) + 10; 
 
         // Present score input box
         this.inputBoxes.push({
@@ -648,7 +654,7 @@
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const titleSize = isMobile ? 40 : 50;
-    const questionSize = isMobile ? 20 : 24;
+    const questionSize = isMobile ? 20 : 27;
     const headerSize = isMobile ? 28 : 32;
     const instructionSize = isMobile ? 18 : 22;
 
@@ -656,10 +662,10 @@
     ctx.fillStyle = '#2c3e50';
     ctx.font = `bold ${titleSize}px Arial`;
     ctx.textAlign = 'center';
-    ctx.fillText('Self-Assessment Scale', canvas.width / 2, isMobile ? 60 : 80);
+    ctx.fillText('Self-Assessment Scale', canvas.width / 2, isMobile ? 60 : 75);
 
-    // TOP-RIGHT INSTRUCTIONS - Fixed positioning
-    ctx.font = `${instructionSize}px Arial`;
+    // Rating Guide
+    ctx.font = `25px Arial`;
     ctx.fillStyle = '#7f8c8d';
     ctx.textAlign = 'right';
     const instructionText = [
@@ -681,17 +687,17 @@
     ctx.fillStyle = '#34495e';
 
     const headerY = isMobile ? 180 : 220;
-    const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 200);
+    const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 85);
     const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 200);
 
     ctx.textAlign = 'center';
     ctx.fillText('Present Score', presentHeaderX, headerY);
     ctx.fillText('Target Score', targetHeaderX, headerY);
 
-    // Scale instruction (moved to center, smaller)
+    // Scale instruction 
     ctx.font = `${instructionSize}px Arial`;
     ctx.fillStyle = '#7f8c8d';
-    ctx.fillText('Scale 0 - 20', canvas.width / 2, headerY + 30);
+    ctx.fillText('Scale 0 - 20', canvas.width / 2 + 50, headerY + 50);
 
     // Questions and input boxes
     ctx.font = `${questionSize}px Arial`;
@@ -701,20 +707,22 @@
     const rowHeight = isMobile ? 80 : 90;
     const questions = this.scaleQuestions[this.pillarIndex];
 
+    let y = startY;
+
     for (let i = 0; i < 5; i++) {
-        const y = startY + (i * rowHeight);
 
         // Question number and text
         ctx.textAlign = 'left';
         const questionX = isMobile ? 20 : 50;
-        const questionMaxWidth = isMobile ? 300 : 400;
+        const questionMaxWidth = isMobile ? 300 : 660;
         
-        const lineHeight = isMobile ? 22 : 26;
-        this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
+        const lineHeight = isMobile ? 22 : 35;
+        const questionHeight = this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
 
         // Draw input boxes
         for (let box of this.inputBoxes) {
             if (box.index === i) {
+
                 // Box background
                 ctx.fillStyle = this.activeInput &&
                     this.activeInput.type === box.type &&
@@ -729,58 +737,87 @@
                 ctx.strokeRect(box.x, box.y, box.width, box.height);
 
                 // Value text
-                ctx.fillStyle = '#2c3e50';
-                ctx.font = `${questionSize}px Arial`;
-                ctx.textAlign = 'center';
-                const value = box.type === 'present' ? this.presentScores[i] : this.targetScores[i];
-                if (value > 0) {
-                    ctx.fillText(value.toString(), box.x + box.width / 2, box.y + box.height / 2 + 8);
-                }
+                ctx.fillStyle = "#2c3e50";
+                ctx.textAlign = "center";
+                const value =
+                  box.type === "present"
+                    ? this.presentScores[i]
+                    : this.targetScores[i];
+                
+                    
+                    const isActive = this.activeInput &&
+                                    this.activeInput.type === box.type &&
+                                    this.activeInput.index === box.index;
+
+                    const valueStr = (isNaN(value) || value === 0) ? "" : value.toString();
+                    ctx.textBaseline = "middle";
+                    const centerX = box.x + box.width / 2;
+                    const centerY = box.y + box.height / 2;
+
+                    ctx.fillText(valueStr, centerX, centerY);
+
+                    // Draw blinking cursor if active
+                    if(isActive) {
+                        const now = Date.now();
+                        if(Math.floor(now / 500) % 2 === 0) { // blink every 500ms
+                            
+                            const textWidth = valueStr ? ctx.measureText(valueStr).width : 0;
+                            const cursorX = centerX + textWidth / 2 + 2;
+                            const cursorY = centerY - questionSize / 2;
+                            const cursorHeight = questionSize - 1;
+                            ctx.beginPath();
+                            ctx.moveTo(cursorX, cursorY);
+                            ctx.lineTo(cursorX, cursorY + cursorHeight);
+                            ctx.strokeStyle = '#2c3e50';
+                            ctx.lineWidth = 2;
+                            ctx.stroke();
+                        }
+                    }
             }
         }
+
+        y += questionHeight + 30;
     }
 
-    // FIXED: Total scores positioning
+    // Total scores positioning
     const totalY = startY + (5 * rowHeight) + 40;
 
     // Calculate totals
     const presentTotal = this.presentScores.reduce((a, b) => a + b, 0);
     const targetTotal = this.targetScores.reduce((a, b) => a + b, 0);
 
-    // Draw "TOTAL SCORES" label ABOVE the actual total numbers
-    ctx.font = `${instructionSize}px Arial`;
-    ctx.fillStyle = '#7f8c8d';
+    // TOTAL SCORES label
+    ctx.font = `bold 27px Arial`;
+    ctx.fillStyle = '#34495e';
     ctx.textAlign = 'center';
-    ctx.fillText('TOTAL SCORES', canvas.width / 2, totalY - 20);
+    ctx.fillText('TOTAL SCORES', canvas.width / 2 + 635, totalY - 300);
 
-    // Draw the actual total numbers below the label
+    // TOTAL SCORES values
     ctx.font = `bold ${headerSize}px Arial`;
     ctx.fillStyle = '#2c3e50';
     ctx.textAlign = 'center';
-    // ctx.fillText(`${presentTotal}`, presentHeaderX, totalY);
-    // ctx.fillText(`${targetTotal}`, targetHeaderX, totalY);
 
     const presentX = canvas.width / 2 - (isMobile ? 100 : 130);
 const targetX = canvas.width / 2 + (isMobile ? 120 : 150);
-ctx.fillText(`${presentTotal}`, presentX + (isMobile ? 40 : 50), totalY +10);
-ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
+ctx.fillText(`Present: ${presentTotal}`, presentX + (isMobile ? 40 : 650), totalY - 170);
+ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 40 : 600), totalY - 170);
     // Validation message
     if (!this.validateAllFieldsFilled()) {
         ctx.font = `bold ${instructionSize}px Arial`;
         ctx.fillStyle = '#e74c3c';
         ctx.textAlign = 'center';
-        ctx.fillText('Please fill all fields before continuing', canvas.width / 2, totalY + 50);
+        ctx.fillText('Please fill all fields before continuing', canvas.width / 2, totalY + 100);
     }
 
     // Notes instruction
-    const notesY = totalY + (this.validateAllFieldsFilled() ? 90 : 110);
+    const notesY = totalY + (this.validateAllFieldsFilled() ? 90 : 160);
     ctx.font = `${instructionSize}px Arial`;
     ctx.fillStyle = '#7f8c8d';
     ctx.textAlign = 'center';
     ctx.fillText('Take some notes on your feelings and thoughts about these scores', canvas.width / 2, notesY);
 
     // Continue instruction
-    const continueY = canvas.height - (isMobile ? 60 : 80);
+    const continueY = canvas.height - (isMobile ? 60 : 60);
     ctx.fillStyle = this.validateAllFieldsFilled() ? '#7f8c8d' : '#bdc3c7';
     ctx.fillText(isMobile ? 'Tap to continue' : 'Click anywhere or press Enter to continue', canvas.width / 2, continueY);
 }
@@ -790,8 +827,12 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
         for (let box of this.inputBoxes) {
             if (x >= box.x && x <= box.x + box.width &&
                 y >= box.y && y <= box.y + box.height) {
-                this.activeInput = { type: box.type, index: box.index };
-                this.showNumberInput(box);
+                
+                if (Scene_Scale.isMobileDevice()) {
+                    this.showNumberInput(box);
+                } else {
+                    this.activeInput = { type: box.type, index: box.index };
+                }
                 return;
             }
         }
@@ -804,11 +845,38 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
             alert('Please fill all present and target scores before continuing.');
         }
     }
+
+        handleKeyPress(e) {
+          if (!this.activeInput || Scene_Scale.isMobileDevice()) return;
+
+          const { type, index } = this.activeInput;
+          const targetArray = type == "present" ? this.presentScores : this.targetScores;
+
+          if (e.key >= "0" && e.key <= "9") {
+            const current = targetArray[index].toString();
+            const newValue = parseInt(current + e.key); 
+
+            if (newValue <= 20) {
+              targetArray[index] = newValue;
+            }
+          }
+
+          if (e.key === "Backspace") {
+            const current = targetArray[index].toString();
+            const newStr = current.slice(0, -1);
+            targetArray[index] = parseInt(newStr) || 0;
+          }
+
+          if (e.key === "Enter") {
+            this.activeInput = null;
+          }
+        }
+    
     showNumberInput(box) {
     const currentValue = box.type === 'present' ?
         this.presentScores[box.index] : this.targetScores[box.index];
 
-    // Create a number input instead of text prompt
+    // number input 
     const input = document.createElement('input');
     input.type = 'number';
     input.min = '0';
@@ -827,7 +895,6 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
     input.style.textAlign = 'center';
     input.style.width = '100px';
 
-    // Add backdrop
     const backdrop = document.createElement('div');
     backdrop.style.position = 'fixed';
     backdrop.style.top = '0';
@@ -875,29 +942,7 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
     input.addEventListener('blur', saveValue);
     backdrop.addEventListener('click', cleanup);
 }
-/*
-    showNumberInput(box) {
-        const currentValue = box.type === 'present' ?
-            this.presentScores[box.index] : this.targetScores[box.index];
 
-        const input = prompt(`Enter a value from 0-20 for this question:`, currentValue || '');
-
-        if (input !== null) {
-            const value = parseInt(input);
-            if (!isNaN(value) && value >= 0 && value <= 20) {
-                if (box.type === 'present') {
-                    this.presentScores[box.index] = value;
-                } else {
-                    this.targetScores[box.index] = value;
-                }
-            } else {
-                alert('Please enter a valid number between 0 and 20.');
-            }
-        }
-
-        this.activeInput = null;
-    }
-*/
     continue() {
         // Double-check validation before proceeding
         if (this.validateAllFieldsFilled()) {
@@ -1242,10 +1287,9 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
                 }
             }
 
-            // Add this new method to Scene_Game
             getReflectionImageType(pillarIndex) {
                 const reflectionImageTypes = [
-                    'emotional-reflection',  // Your watercolor heart image
+                    'emotional-reflection',  
                     'purpose-reflection',
                     'financial-reflection',
                     'physical-reflection',
@@ -1258,11 +1302,11 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
 
 
             handleAction(command) {
-                // Handle keyboard actions if needed
+                
             }
 
             onEnd() {
-                // Scene cleanup
+                
             }
         }
 
@@ -1291,7 +1335,7 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
             }
 
             update(dt) {
-                // No updates needed
+                
             }
 
             render(ctx) {
@@ -1410,7 +1454,7 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
                     height: 60
                 };
 
-                ctx.fillStyle = 'black'; // Reset color
+                ctx.fillStyle = 'black'; 
                 ctx.font = `${instructionSize}px Arial`;
                 const instructionY = isMobile ? 975 : 1050;
                 if (isMobile) {
@@ -1511,8 +1555,6 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
                 this.canvas.style.position = 'static';
 
                 // Calculate scaling factors for input handling
-                // this.scaleX = this.canvas.width / parseFloat(this.canvas.style.width);
-                // this.scaleY = this.canvas.height / parseFloat(this.canvas.style.height);
                 const rect = this.canvas.getBoundingClientRect();
                 this.scaleX = this.canvas.width / rect.width;
                 this.scaleY = this.canvas.height / rect.height;
@@ -1552,6 +1594,10 @@ ctx.fillText(`${targetTotal}`, targetX + (isMobile ? 40 : 50), totalY + 10);
                     if (actionMap.has(e.key)) {
                         const command = new Command(actionMap.get(e.key), 'START');
                         scene.handleAction(command);
+                    }
+
+                    if (typeof scene.handleKeyPress === "function") {
+                        scene.handleKeyPress(e);
                     }
                 }
             }
