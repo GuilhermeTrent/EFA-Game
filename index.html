@@ -687,7 +687,7 @@
     ctx.fillStyle = '#34495e';
 
     const headerY = isMobile ? 180 : 220;
-    const presentHeaderX = canvas.width / 2 - (isMobile ? 200 : 85);
+    const presentHeaderX = canvas.width / 2 - (isMobile ? 150 : 85);
     const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 200);
 
     ctx.textAlign = 'center';
@@ -714,7 +714,7 @@
         // Question number and text
         ctx.textAlign = 'left';
         const questionX = isMobile ? 20 : 50;
-        const questionMaxWidth = isMobile ? 550 : 660;
+        const questionMaxWidth = isMobile ? 570 : 660;
         
         const lineHeight = isMobile ? 22 : 35;
         const questionHeight = this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
