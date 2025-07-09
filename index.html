@@ -1436,21 +1436,21 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
                     // Store the fundamentally-me link area for click detection
                     this.fundamentallyMeLinkArea = {
                         x: canvas.width / 2 - 400,
-                        y: linkY + 60 - 30,
+                        y: linkY + 40 - 30,
                         width: 800,
                         height: 60
                     };
                 }
 
                 // Second clickable link - booking
-                const bookingY = isMobile ? 900 : 948;
+                const bookingY = isMobile ? 900 : 945;
                 ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
 
                 // Store the booking link area for click detection
                 this.bookingLinkArea = {
-                    x: canvas.width / 2 - 300,
+                    x: canvas.width / 2 - 400,
                     y: bookingY - 30,
-                    width: 600,
+                    width: 800,
                     height: 60
                 };
 
