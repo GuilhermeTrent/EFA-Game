@@ -1348,7 +1348,7 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
                 const titleSize = isMobile ? 80 : 100;
                 const subtitleSize = isMobile ? 45 : 60;
                 const footerSize = isMobile ? 40 : 50;
-                const linkSize = isMobile ? 32 : 45;
+                const linkSize = isMobile ? 32 : 30;
                 const instructionSize = isMobile ? 28 : 30;
 
                 ctx.fillStyle = 'black';
@@ -1431,7 +1431,7 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
                     // Blue link on next line for PC too
                     ctx.fillStyle = '#0066cc';
                     ctx.font = `bold ${linkSize}px Arial`;
-                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 60);
+                    ctx.fillText('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', canvas.width / 2, linkY + 40);
 
                     // Store the fundamentally-me link area for click detection
                     this.fundamentallyMeLinkArea = {
@@ -1443,7 +1443,7 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
                 }
 
                 // Second clickable link - booking
-                const bookingY = isMobile ? 900 : 975;
+                const bookingY = isMobile ? 900 : 948;
                 ctx.fillText('Book a session: https://efitacademy.ca/booking/', canvas.width / 2, bookingY);
 
                 // Store the booking link area for click detection
@@ -1451,6 +1451,20 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
                     x: canvas.width / 2 - 300,
                     y: bookingY - 30,
                     width: 600,
+                    height: 60
+                };
+
+                // Third clickable link - YouTube
+                const youtubeY = isMobile ? 980 : 988;
+                ctx.fillStyle = '#cc0000'; 
+                ctx.font = `bold ${linkSize}px Arial`;
+                ctx.fillText('Watch us on YouTube: https://www.youtube.com/@emotionalfitnessacademy9087', canvas.width / 2, youtubeY);
+
+                // Store clickable area
+                this.youtubeLinkArea = {
+                    x: canvas.width / 2 - 400,
+                    y: youtubeY - 30,
+                    width: 800,
                     height: 60
                 };
 
@@ -1482,7 +1496,15 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
                     y <= this.bookingLinkArea.y + this.bookingLinkArea.height) {
                     // Open booking link
                     window.open('https://efitacademy.ca/booking/', '_blank');
-                } else {
+                } 
+                else if (this.youtubeLinkArea &&
+                    x >= this.youtubeLinkArea.x &&
+                    x <= this.youtubeLinkArea.x + this.youtubeLinkArea.width &&
+                    y >= this.youtubeLinkArea.y &&
+                    y <= this.youtubeLinkArea.y + this.youtubeLinkArea.height) {
+                    // Open youtube link
+                    window.open('https://www.youtube.com/@emotionalfitnessacademy9087', '_blank');
+                }else {
                     // Return to menu for any other click
                     this.game.changeScene('MENU', new Scene_Menu(this.game));
                 }
