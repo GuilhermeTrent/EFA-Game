@@ -687,7 +687,7 @@
     ctx.fillStyle = '#34495e';
 
     const headerY = isMobile ? 180 : 220;
-    const presentHeaderX = canvas.width / 2 - (isMobile ? 180 : 85);
+    const presentHeaderX = canvas.width / 2 - (isMobile ? 200 : 85);
     const targetHeaderX = canvas.width / 2 + (isMobile ? 150 : 200);
 
     ctx.textAlign = 'center';
@@ -714,7 +714,7 @@
         // Question number and text
         ctx.textAlign = 'left';
         const questionX = isMobile ? 20 : 50;
-        const questionMaxWidth = isMobile ? 500 : 660;
+        const questionMaxWidth = isMobile ? 550 : 660;
         
         const lineHeight = isMobile ? 22 : 35;
         const questionHeight = this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
@@ -799,8 +799,8 @@
 
     const presentX = canvas.width / 2 - (isMobile ? 100 : 130);
 const targetX = canvas.width / 2 + (isMobile ? 120 : 150);
-ctx.fillText(`Present: ${presentTotal}`, presentX + (isMobile ? 650 : 650), totalY - 170);
-ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY - 170);
+ctx.fillText(`Present: ${presentTotal}`, presentX + (isMobile ? 650 : 650), totalY - 190);
+ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY - 190);
     // Validation message
     if (!this.validateAllFieldsFilled()) {
         ctx.font = `bold ${instructionSize}px Arial`;
