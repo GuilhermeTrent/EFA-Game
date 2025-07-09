@@ -714,7 +714,7 @@
         // Question number and text
         ctx.textAlign = 'left';
         const questionX = isMobile ? 20 : 50;
-        const questionMaxWidth = isMobile ? 300 : 660;
+        const questionMaxWidth = isMobile ? 500 : 660;
         
         const lineHeight = isMobile ? 22 : 35;
         const questionHeight = this.wrapText(ctx, `${i + 1}. ${questions[i]}`, questionX, y + 20, questionMaxWidth, lineHeight);
@@ -799,8 +799,8 @@
 
     const presentX = canvas.width / 2 - (isMobile ? 100 : 130);
 const targetX = canvas.width / 2 + (isMobile ? 120 : 150);
-ctx.fillText(`Present: ${presentTotal}`, presentX + (isMobile ? 40 : 650), totalY - 170);
-ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 40 : 600), totalY - 170);
+ctx.fillText(`Present: ${presentTotal}`, presentX + (isMobile ? 500 : 650), totalY - 170);
+ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 450 : 600), totalY - 170);
     // Validation message
     if (!this.validateAllFieldsFilled()) {
         ctx.font = `bold ${instructionSize}px Arial`;
