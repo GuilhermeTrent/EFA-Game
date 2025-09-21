@@ -493,67 +493,60 @@
 
         // Scale questions for each pillar
         this.scaleQuestions = [
-            // Emotional Pillar
+           // Emotional Pillar
             [
-                "How well do you recognize, identify, and understand your emotions as they arise?",
-                "How effectively do you manage and regulate your emotions, especially intense or difficult ones?",
-                "How appropriately and effectively do you express your emotions to others?",
-                "How well do you understand, connect with, and respond to others' emotions?",
-                "How quickly and effectively do you bounce back from emotional setbacks and maintain emotional balance?"
+                "How well do you recognize and understand your emotions?",
+                "How well do you manage and regulate intense emotions?",
+                "How effectively do you express emotions to others?"
+                
             ],
             // Purpose Pillar
             [
-                "How clear and defined is your sense of life purpose and personal mission?",
-                "How consistently do your daily actions and major life decisions align with your core values?",
-                "How engaged are you in pursuing goals that feel personally meaningful and fulfilling?",
-                "How well do you create positive impact and contribute to something beyond yourself?",
-                "How effectively do you extract purpose and meaning from both positive and challenging life experiences?"
+                "How clear is your sense of purpose and mission?",
+                "How well do your actions align with your core values?",
+                "How engaged are you in meaningful goals?"
+                
             ],
             // Financial Pillar
             [
-                "How well do you manage anxiety, worry, and stress related to money and financial matters?",
-                "How positive and healthy is your relationship with money and your beliefs about financial abundance?",
-                "How confident and clear-headed are you when making important financial decisions?",
-                "How well do you control emotional spending and maintain healthy financial boundaries?",
-                "How emotionally secure and peaceful do you feel about your financial future and planning?"
+                "How well do you handle money-related stress and anxiety?",
+                "How healthy is your relationship with money and abundance?",
+                "How confident are you in financial decisions?"
+                
             ],
             // Physical Pillar
             [
-                "How comfortable and accepting are you of your physical body and appearance?",
-                "How well do you manage worry, fear, and anxiety related to physical health concerns?",
-                "How healthy is your emotional relationship with exercise, movement, and physical activity?",
-                "How well do you emotionally cope with physical discomfort, illness, or chronic conditions?",
-                "How effectively do you maintain emotional balance when dealing with physical fatigue or low energy?"
+                "How comfortable are you with your body and appearance?",
+                "How well do you manage health-related worries?",
+                "How healthy is your relationship with exercise and activity?"
+                
             ],
             // Mental Pillar
             [
-                "How well do you recognize and redirect negative, repetitive, or destructive thought patterns?",
-                "How effectively do you manage emotional responses to mental pressure, information overload, or cognitive demands?",
-                "How well do you maintain emotional balance when experiencing mental fog, distraction, or cognitive difficulties?",
-                "How kind, supportive, and constructive is your internal mental dialogue and self-talk?",
-                "How well do you recognize your mental health needs and take proactive steps to maintain psychological well-being?"
+                "How well do you redirect negative thought patterns?",
+                "How well do you handle mental pressure and overload?",
+                "How well do you stay balanced during distraction or fog?"
+                
             ],
             // Environmental Pillar
             [
-                "How well do you adapt emotionally when your physical or social environment changes unexpectedly?",
-                "How effectively do you manage your emotional responses when in high-stress, toxic, or overwhelming environments?",
-                "How well do you create and maintain healthy emotional boundaries between yourself and negative environmental influences?",
-                "How proactively do you design and cultivate environments that support your emotional well-being?",
-                "How aware are you of how different environments affect your emotional state, and how well do you use this awareness to make healthy choices?"
+                "How well do you adapt to unexpected environmental changes?",
+                "How well do you manage stress in toxic environments?",
+                "How well do you set boundaries with negative influences?"
+               
             ],
             // Spiritual Pillar
             [
-                "How connected do you feel to something greater than yourself (God, universe, nature, humanity, divine energy)?",
-                "How regularly do you engage in spiritual practices that nurture your soul and deepen your connection?",
-                "How often do you experience a sense of the sacred, wonder, or reverence in daily life?",
-                "How strong is your faith or trust in life's unfolding, even during uncertain or difficult times?",
-                "How well do you recognize, embrace, and integrate transcendent or mystical experiences into your daily life?"
+                "How connected do you feel to something greater?",
+                "How often do you practice nurturing spirituality?",
+                "How often do you feel wonder or reverence in daily life?"
+              
             ]
         ];
 
         // Input values 
-        this.presentScores = [0, 0, 0, 0, 0];
-        this.targetScores = [0, 0, 0, 0, 0];
+        this.presentScores = [null, null, null];
+        this.targetScores = [null, null, null];
         this.activeInput = null; 
         this.inputBoxes = [];
         this.setupInputBoxes();
@@ -575,7 +568,7 @@
 
     this.inputBoxes = [];
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
         
         const y = startY + (i * rowHeight) + 10; 
 
@@ -612,12 +605,19 @@
 
     // Validation function to check if all fields are filled
     validateAllFieldsFilled() {
-        for (let i = 0; i < 5; i++) {
-            if (this.presentScores[i] === 0 || this.targetScores[i] === 0) {
-                return false;
-            }
+          for (let i = 0; i < 3; i++) {
+        if (this.presentScores[i] === null || isNaN(this.presentScores[i]) ||
+            this.targetScores[i] === null || isNaN(this.targetScores[i])) {
+            return false;
         }
-        return true;
+    }
+    return true;
+        // for (let i = 0; i < 3; i++) {
+        //     if (this.presentScores[i] === 0 || this.targetScores[i] === 0) {
+        //         return false;
+        //     }
+        // }
+        // return true;
     }
 
     // Helper function to wrap text
@@ -709,7 +709,7 @@
 
     let y = startY;
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 3; i++) {
 
         // Question number and text
         ctx.textAlign = 'left';
@@ -749,7 +749,8 @@
                                     this.activeInput.type === box.type &&
                                     this.activeInput.index === box.index;
 
-                    const valueStr = (isNaN(value) || value === 0) ? "" : value.toString();
+                                    const valueStr = (value === null || isNaN(value)) ? "" : value.toString();
+                    // const valueStr = (isNaN(value) || value === 0) ? "" : value.toString();
                     ctx.textBaseline = "middle";
                     const centerX = box.x + box.width / 2;
                     const centerY = box.y + box.height / 2;
@@ -780,7 +781,7 @@
     }
 
     // Total scores positioning
-    const totalY = startY + (5 * rowHeight) + 40;
+    const totalY = startY + (3 * rowHeight) + 40;
 
     // Calculate totals
     const presentTotal = this.presentScores.reduce((a, b) => a + b, 0);
@@ -846,31 +847,39 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
         }
     }
 
-        handleKeyPress(e) {
-          if (!this.activeInput || Scene_Scale.isMobileDevice()) return;
+       handleKeyPress(e) {
+    if (!this.activeInput || Scene_Scale.isMobileDevice()) return;
 
-          const { type, index } = this.activeInput;
-          const targetArray = type == "present" ? this.presentScores : this.targetScores;
+    const { type, index } = this.activeInput;
+    const targetArray = type === "present" ? this.presentScores : this.targetScores;
 
-          if (e.key >= "0" && e.key <= "9") {
-            const current = targetArray[index].toString();
-            const newValue = parseInt(current + e.key); 
+    // Handle number input (0–9)
+    if (e.key >= "0" && e.key <= "9") {
+        const currentVal = targetArray[index];
+        const currentStr = (currentVal === null || isNaN(currentVal)) ? "" : currentVal.toString();
 
-            if (newValue <= 20) {
-              targetArray[index] = newValue;
-            }
-          }
+        const newStr = currentStr + e.key;
+        const newValue = parseInt(newStr, 10);
 
-          if (e.key === "Backspace") {
-            const current = targetArray[index].toString();
-            const newStr = current.slice(0, -1);
-            targetArray[index] = parseInt(newStr) || 0;
-          }
-
-          if (e.key === "Enter") {
-            this.activeInput = null;
-          }
+        if (!isNaN(newValue) && newValue >= 0 && newValue <= 20) {
+            targetArray[index] = newValue;
         }
+    }
+
+    // Handle backspace → clears to null when empty
+    if (e.key === "Backspace") {
+        const currentVal = targetArray[index];
+        const currentStr = (currentVal === null || isNaN(currentVal)) ? "" : currentVal.toString();
+
+        const newStr = currentStr.slice(0, -1);
+        targetArray[index] = newStr === "" ? null : parseInt(newStr, 10);
+    }
+
+    // Handle Enter → finish editing
+    if (e.key === "Enter") {
+        this.activeInput = null;
+    }
+}
     
     showNumberInput(box) {
     const currentValue = box.type === 'present' ?
@@ -915,21 +924,48 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
         document.body.removeChild(backdrop);
         this.activeInput = null;
     };
-
     const saveValue = () => {
-        const value = parseInt(input.value);
-        if (!isNaN(value) && value >= 0 && value <= 20) {
-            if (box.type === 'present') {
-                this.presentScores[box.index] = value;
-            } else {
-                this.targetScores[box.index] = value;
-            }
-            cleanup();
+    const value = input.value.trim();
+    if (value === "") {
+        // Empty → null
+        if (box.type === 'present') {
+            this.presentScores[box.index] = null;
         } else {
-            alert('Please enter a valid number between 0 and 20.');
-            input.focus();
+            this.targetScores[box.index] = null;
         }
-    };
+        cleanup();
+        return;
+    }
+
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue >= 0 && numValue <= 20) {
+        if (box.type === 'present') {
+            this.presentScores[box.index] = numValue;
+        } else {
+            this.targetScores[box.index] = numValue;
+        }
+        cleanup();
+    } else {
+        alert('Please enter a valid number between 0 and 20.');
+        input.focus();
+    }
+};
+
+
+    // const saveValue = () => {
+    //     const value = parseInt(input.value);
+    //     if (!isNaN(value) && value >= 0 && value <= 20) {
+    //         if (box.type === 'present') {
+    //             this.presentScores[box.index] = value;
+    //         } else {
+    //             this.targetScores[box.index] = value;
+    //         }
+    //         cleanup();
+    //     } else {
+    //         alert('Please enter a valid number between 0 and 20.');
+    //         input.focus();
+    //     }
+    // };
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
