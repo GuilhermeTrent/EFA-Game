@@ -490,6 +490,9 @@
         this.pillarIndex = pillarIndex;
         this.onContinueCallback = onContinueCallback;
         this.registerActions();
+        this.skipButton = null;
+        this.continueButton = null;
+        this.showValidationMessage = null;
 
         // Scale questions for each pillar
         this.scaleQuestions = [
@@ -821,6 +824,27 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
     const continueY = canvas.height - (isMobile ? 60 : 60);
     ctx.fillStyle = this.validateAllFieldsFilled() ? '#7f8c8d' : '#bdc3c7';
     ctx.fillText(isMobile ? 'Tap to continue' : 'Click anywhere or press Enter to continue', canvas.width / 2, continueY);
+
+    //Buttons
+    const buttonWidth = isMobile ? 180 : 220;
+    const buttonHeight = isMobile ? 60 : 70;
+    const buttonY = canvas.height - (isMobile ? 120 : 150);
+
+    // skip button
+    this.skipButton = {
+        x: canvas.width / 2 - buttonWidth - 40,
+        y: buttonY,
+        width: buttonWidth,
+        height: buttonHeight
+    };
+
+    ctx.fillStyle = '#e74c3c'; //red
+    ctx.fillRect(this.skipButton.x, this.skipButton.y, this.skipButton.width, this.skipButton.height);
+    ctx.fillStyle = 'white';
+    ctx.font = `bold ${isMobile ? 22 : 26}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Skip', this.skipButton.x + buttonWidth / 2, this.skipButton.y + buttonHeight / 2);
 }
 
     handleClick(x, y) {
