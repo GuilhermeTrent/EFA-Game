@@ -802,33 +802,21 @@
     ctx.textAlign = 'center';
 
     const presentX = canvas.width / 2 - (isMobile ? 100 : 130);
-const targetX = canvas.width / 2 + (isMobile ? 120 : 150);
-ctx.fillText(`Present: ${presentTotal}`, presentX + (isMobile ? 650 : 650), totalY - 190);
-ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY - 190);
-    // Validation message
-    if (!this.validateAllFieldsFilled()) {
-        ctx.font = `bold ${instructionSize}px Arial`;
-        ctx.fillStyle = '#e74c3c';
-        ctx.textAlign = 'center';
-        ctx.fillText('Please fill all fields before continuing', canvas.width / 2, totalY + 100);
-    }
+    const targetX = canvas.width / 2 + (isMobile ? 120 : 150);
+    ctx.fillText(`Present: ${presentTotal}`, presentX + (isMobile ? 650 : 650), totalY - 190);
+    ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY - 190);
 
     // Notes instruction
-    const notesY = totalY + (this.validateAllFieldsFilled() ? 90 : 160);
+    const notesY = totalY + (this.validateAllFieldsFilled() ? 90 : 300);
     ctx.font = `${instructionSize}px Arial`;
     ctx.fillStyle = '#7f8c8d';
     ctx.textAlign = 'center';
     ctx.fillText('Take some notes on your feelings and thoughts about these scores', canvas.width / 2, notesY);
 
-    // Continue instruction
-    const continueY = canvas.height - (isMobile ? 60 : 60);
-    ctx.fillStyle = this.validateAllFieldsFilled() ? '#7f8c8d' : '#bdc3c7';
-    ctx.fillText(isMobile ? 'Tap to continue' : 'Click anywhere or press Enter to continue', canvas.width / 2, continueY);
-
     //Buttons
     const buttonWidth = isMobile ? 180 : 220;
     const buttonHeight = isMobile ? 60 : 70;
-    const buttonY = canvas.height - (isMobile ? 120 : 150);
+    const buttonY = canvas.height - (isMobile ? 180 : 310);
 
     // skip button
     this.skipButton = {
@@ -1011,22 +999,6 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
         input.focus();
     }
 };
-
-
-    // const saveValue = () => {
-    //     const value = parseInt(input.value);
-    //     if (!isNaN(value) && value >= 0 && value <= 20) {
-    //         if (box.type === 'present') {
-    //             this.presentScores[box.index] = value;
-    //         } else {
-    //             this.targetScores[box.index] = value;
-    //         }
-    //         cleanup();
-    //     } else {
-    //         alert('Please enter a valid number between 0 and 20.');
-    //         input.focus();
-    //     }
-    // };
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
