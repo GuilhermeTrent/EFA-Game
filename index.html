@@ -883,16 +883,32 @@ ctx.fillText(`Target: ${targetTotal}`, targetX + (isMobile ? 600 : 600), totalY 
             }
         }
 
-        // Only continue if all fields are filled
-        if (this.validateAllFieldsFilled()) {
-            this.continue();
-        } else {
-            // Show alert if trying to continue without filling all fields
-            alert('Please fill all present and target scores before continuing.');
+        // Click on skip button
+        if(this.skipButton &&
+            x >= this.skipButton.x && x <= this.skipButton.x + this.skipButton.width &&
+            y >= this.skipButton.y && y <= this.skipButton.y + this.skipButton.height) {
+
+            // go to next screen without validation
+            this.onContinueCallback();
+        }
+
+        //Click on continue button
+        if(this.continueButton &&
+            x >= this.continueButton.x && x <= this.continueButton.x + this.continueButton.width &&
+            y >= this.continueButton.y && y <= this.continueButton.y + this.continueButton.height) {
+
+            // Only continue if all fields are filled
+            if (this.validateAllFieldsFilled()) {
+                this.continue();
+            } else {
+                this.showValidationMessage = true;
+            }
+
+            return;
         }
     }
 
-       handleKeyPress(e) {
+    handleKeyPress(e) {
     if (!this.activeInput || Scene_Scale.isMobileDevice()) return;
 
     const { type, index } = this.activeInput;
