@@ -1381,23 +1381,25 @@
 
         // End Scene
         class Scene_End extends Scene {
-            constructor(gameEngine, imageManager) {
-                super(gameEngine);
-                this.registerActions();
-                this.bookingLinkArea = null;
-                this.fundamentallyMeLinkArea = null;
-                this.imageManager = imageManager;
+          constructor(gameEngine, imageManager) {
+    super(gameEngine);
+    this.registerActions();
+    this.bookingLinkArea = null;
+    this.fundamentallyMeLinkArea = null;
+    this.youtubeLinkArea = null;
+    this.menuButton = null;
+    this.imageManager = imageManager;
 
-                this.iconKeys = [
-                    'heart2',
-                    'trophy',
-                    'money',
-                    'ring',
-                    'brain',
-                    'plant',
-                    'spiritual'
-                ];
-            }
+    this.iconKeys = [
+        'heart2',
+        'trophy',
+        'money',
+        'ring',
+        'brain',
+        'plant',
+        'spiritual'
+    ];
+}
 
             registerActions() {
                 this.registerAction('Escape', 'QUIT');
@@ -1537,47 +1539,81 @@
                     height: 60
                 };
 
-                ctx.fillStyle = 'black'; 
-                ctx.font = `${instructionSize}px Arial`;
-                const instructionY = isMobile ? 985 : 1050;
-                if (isMobile) {
-                    ctx.fillText('Tap links above or tap elsewhere to return to menu', canvas.width / 2, instructionY);
-                } else {
-                    ctx.fillText('Click links above or click elsewhere to return to menu', canvas.width / 2, instructionY);
-                }
+            // Draw "Return to Menu" button
+const buttonWidth = isMobile ? 220 : 250;
+const buttonHeight = isMobile ? 50 : 60;
+const buttonY = canvas.height - (isMobile ? 60 : 70);
+const buttonX = (canvas.width - buttonWidth) / 2;
+
+this.menuButton = {
+    x: buttonX,
+    y: buttonY,
+    width: buttonWidth,
+    height: buttonHeight
+};
+
+// Button background
+ctx.fillStyle = '#2c3e50';
+ctx.fillRect(this.menuButton.x, this.menuButton.y, this.menuButton.width, this.menuButton.height);
+
+// Button border
+ctx.strokeStyle = '#34495e';
+ctx.lineWidth = 3;
+ctx.strokeRect(this.menuButton.x, this.menuButton.y, this.menuButton.width, this.menuButton.height);
+
+// Button text
+ctx.fillStyle = 'white';
+ctx.font = `bold ${isMobile ? 26 : 30}px Arial`;
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillText('Return to Menu', this.menuButton.x + buttonWidth / 2, this.menuButton.y + buttonHeight / 2);
             }
 
-            handleClick(x, y) {
+           handleClick(x, y) {
 
-                // Check if click is on fundamentally-me link
-                if (this.fundamentallyMeLinkArea &&
-                    x >= this.fundamentallyMeLinkArea.x &&
-                    x <= this.fundamentallyMeLinkArea.x + this.fundamentallyMeLinkArea.width &&
-                    y >= this.fundamentallyMeLinkArea.y &&
-                    y <= this.fundamentallyMeLinkArea.y + this.fundamentallyMeLinkArea.height) {
-                    // Open fundamentally-me link
-                    window.open('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', '_blank');
-                }
-                else if (this.bookingLinkArea &&
-                    x >= this.bookingLinkArea.x &&
-                    x <= this.bookingLinkArea.x + this.bookingLinkArea.width &&
-                    y >= this.bookingLinkArea.y &&
-                    y <= this.bookingLinkArea.y + this.bookingLinkArea.height) {
-                    // Open booking link
-                    window.open('https://efitacademy.ca/booking/', '_blank');
-                } 
-                else if (this.youtubeLinkArea &&
-                    x >= this.youtubeLinkArea.x &&
-                    x <= this.youtubeLinkArea.x + this.youtubeLinkArea.width &&
-                    y >= this.youtubeLinkArea.y &&
-                    y <= this.youtubeLinkArea.y + this.youtubeLinkArea.height) {
-                    // Open youtube link
-                    window.open('https://www.youtube.com/@emotionalfitnessacademy9087', '_blank');
-                }else {
-                    // Return to menu for any other click
-                    this.game.changeScene('MENU', new Scene_Menu(this.game));
-                }
-            }
+    // Check if click is on fundamentally-me link
+    if (this.fundamentallyMeLinkArea &&
+        x >= this.fundamentallyMeLinkArea.x &&
+        x <= this.fundamentallyMeLinkArea.x + this.fundamentallyMeLinkArea.width &&
+        y >= this.fundamentallyMeLinkArea.y &&
+        y <= this.fundamentallyMeLinkArea.y + this.fundamentallyMeLinkArea.height) {
+        // Open fundamentally-me link
+        window.open('https://efitacademy.ca/fundamentally-me-7-pillars-of-self/', '_blank');
+        return;
+    }
+
+    // Check if click is on booking link
+    if (this.bookingLinkArea &&
+        x >= this.bookingLinkArea.x &&
+        x <= this.bookingLinkArea.x + this.bookingLinkArea.width &&
+        y >= this.bookingLinkArea.y &&
+        y <= this.bookingLinkArea.y + this.bookingLinkArea.height) {
+        // Open booking link
+        window.open('https://efitacademy.ca/booking/', '_blank');
+        return;
+    } 
+
+    // Check if click is on YouTube link
+    if (this.youtubeLinkArea &&
+        x >= this.youtubeLinkArea.x &&
+        x <= this.youtubeLinkArea.x + this.youtubeLinkArea.width &&
+        y >= this.youtubeLinkArea.y &&
+        y <= this.youtubeLinkArea.y + this.youtubeLinkArea.height) {
+        // Open youtube link
+        window.open('https://www.youtube.com/@emotionalfitnessacademy9087', '_blank');
+        return;
+    }
+
+    // Check if click is on "Return to Menu" button
+    if (this.menuButton &&
+        x >= this.menuButton.x &&
+        x <= this.menuButton.x + this.menuButton.width &&
+        y >= this.menuButton.y &&
+        y <= this.menuButton.y + this.menuButton.height) {
+        // Return to menu
+        this.game.changeScene('MENU', new Scene_Menu(this.game, this.imageManager));
+    }
+}
 
             handleAction(command) {
                 if (command.getType() === 'START' && command.getName() === 'QUIT') {
